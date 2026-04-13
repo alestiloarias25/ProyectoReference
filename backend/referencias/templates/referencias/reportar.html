@@ -1,0 +1,57 @@
+{% extends "referencias/base.html" %}
+
+{% block title %}Reportar Referencia{% endblock %}
+
+{% block content %}
+<div class="content-grid">
+    <section class="app-card app-card--wide">
+        <div class="section-header">
+            <div>
+                <h2>Modulo de reportes</h2>
+                <p>La vista de reportes queda alineada con el resto de la aplicacion para que el usuario no cambie de contexto visual al navegar.</p>
+            </div>
+            <span class="status-chip">Interfaz consistente</span>
+        </div>
+
+        <div class="feature-grid">
+            <article class="feature-item">
+                <strong>Controles claros</strong>
+                <span>Los botones comparten jerarquia visual para destacar acciones primarias sin romper la coherencia.</span>
+            </article>
+            <article class="feature-item">
+                <strong>Navegacion persistente</strong>
+                <span>Regresar, adelante y menu permanecen visibles para facilitar el flujo entre modulos.</span>
+            </article>
+            <article class="feature-item">
+                <strong>Base preparada</strong>
+                <span>La misma hoja de estilos ya contempla campos, selectores y areas de texto para futuros formularios.</span>
+            </article>
+        </div>
+
+        <div class="action-row">
+            <a class="app-button app-button--primary" href="/referencias/">Volver al menu</a>
+            <a class="app-button app-button--secondary" href="/referencias/consultar">Ir a consultas</a>
+        </div>
+    </section>
+
+    <aside class="app-card">
+        <div class="section-header">
+            <div>
+                <h2>Estado visual</h2>
+                <p>El modulo ya usa el mismo sistema de interfaz del menu y de las demas pantallas.</p>
+            </div>
+        </div>
+
+        <div class="panel-grid">
+            <div class="stat-box">
+                <strong>Colores</strong>
+                <span>Tonos principales y de apoyo compartidos entre vistas.</span>
+            </div>
+            <div class="stat-box">
+                <strong>Botones</strong>
+                <span>Variantes primaria, secundaria y fantasma definidas de forma global.</span>
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}

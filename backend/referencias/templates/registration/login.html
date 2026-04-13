@@ -1,0 +1,44 @@
+{% extends "referencias/base.html" %}
+
+{% block title %}Iniciar sesion{% endblock %}
+
+{% block body %}
+<div class="login-shell">
+    <section class="login-panel">
+        <a class="brand" href="/referencias/">
+            <span class="brand-mark">RF</span>
+            <span class="brand-copy">
+                <small>Acceso al sistema</small>
+                <strong>Sistema de Referencias</strong>
+            </span>
+        </a>
+
+        <span class="eyebrow">Inicio de sesion</span>
+        <h1>Accede con la misma interfaz de la aplicacion</h1>
+        <p>La pantalla de entrada ahora usa la misma paleta, la misma tipografia y el mismo lenguaje visual del resto del sistema.</p>
+
+        {% if form.errors %}
+        <p class="form-error">Usuario o contrasena incorrectos. Verifica tus datos e intenta de nuevo.</p>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <label for="id_username">
+                Usuario
+                <input id="id_username" name="username" type="text" autocomplete="username" required>
+            </label>
+
+            <label for="id_password">
+                Contrasena
+                <input id="id_password" name="password" type="password" autocomplete="current-password" required>
+            </label>
+
+            {% if next %}
+            <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+
+            <button class="app-button app-button--primary" type="submit">Ingresar</button>
+        </form>
+    </section>
+</div>
+{% endblock %}

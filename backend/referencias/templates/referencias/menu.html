@@ -1,0 +1,64 @@
+{% extends "referencias/base.html" %}
+
+{% block title %}Menu de Referencias{% endblock %}
+
+{% block content %}
+<div class="content-grid">
+    <section class="app-card app-card--wide">
+        <div class="section-header">
+            <div>
+                <h2>Opciones disponibles</h2>
+                <p>Selecciona un modulo. Todos comparten la misma navegacion, la misma paleta y el mismo comportamiento visual.</p>
+            </div>
+            <span class="status-chip">Vista unificada</span>
+        </div>
+
+        <div class="option-grid">
+            {% if role == "ADMINISTRADOR" or role == "ARRENDADOR" %}
+            <a class="option-card" href="/referencias/contrato">
+                <strong>Registrar o editar contrato</strong>
+                <span>Gestiona contratos con el mismo estilo de botones, tarjetas y accesos de navegacion.</span>
+            </a>
+            {% endif %}
+
+            {% if role == "ADMINISTRADOR" or role == "ARRENDADOR" %}
+            <a class="option-card" href="/referencias/reportar">
+                <strong>Reportar referencia</strong>
+                <span>Accede al modulo de reportes con una interfaz visual consistente y mas clara.</span>
+            </a>
+            {% endif %}
+
+            {% if role == "ADMINISTRADOR" or role == "ARRENDADOR" or role == "ARRENDATARIO" %}
+            <a class="option-card" href="/referencias/consultar">
+                <strong>Consultar referencia</strong>
+                <span>Consulta informacion usando la misma estructura visual y los mismos controles de navegacion.</span>
+            </a>
+            {% endif %}
+        </div>
+    </section>
+
+    <aside class="app-card">
+        <div class="section-header">
+            <div>
+                <h2>Resumen visual</h2>
+                <p>La aplicacion ahora usa una base reutilizable para que cada vista se sienta parte del mismo sistema.</p>
+            </div>
+        </div>
+
+        <div class="panel-grid">
+            <div class="stat-box">
+                <strong>Rol actual</strong>
+                <span>{{ role }}</span>
+            </div>
+            <div class="stat-box">
+                <strong>Navegacion</strong>
+                <span>Botones persistentes para menu, regresar y adelante.</span>
+            </div>
+            <div class="stat-box">
+                <strong>Estilo comun</strong>
+                <span>Paleta, tarjetas, tipografia y acciones definidas en un solo CSS.</span>
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}

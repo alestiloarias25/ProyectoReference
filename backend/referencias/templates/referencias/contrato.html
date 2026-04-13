@@ -1,0 +1,50 @@
+{% extends "referencias/base.html" %}
+
+{% block title %}Contratos{% endblock %}
+
+{% block content %}
+<div class="content-grid">
+    <section class="app-card app-card--wide">
+        <div class="section-header">
+            <div>
+                <h2>Gestion de contratos</h2>
+                <p>Esta pantalla ya comparte la misma jerarquia visual, los mismos botones y la misma navegacion que el resto del sistema.</p>
+            </div>
+            <span class="status-chip">Modulo listo</span>
+        </div>
+
+        <div class="feature-grid">
+            <article class="feature-item">
+                <strong>Identidad visual comun</strong>
+                <span>Cabecera, tarjetas, espaciados y acentos de color alineados con todas las interfaces.</span>
+            </article>
+            <article class="feature-item">
+                <strong>Acciones coherentes</strong>
+                <span>Los botones principales, secundarios y de navegacion mantienen la misma apariencia y prioridad.</span>
+            </article>
+            <article class="feature-item">
+                <strong>Escalable</strong>
+                <span>Cuando agregues formularios o tablas, ya tendran una base visual consistente para crecer sobre ella.</span>
+            </article>
+        </div>
+
+        <div class="action-row">
+            <a class="app-button app-button--primary" href="/referencias/">Volver al menu</a>
+            <a class="app-button app-button--secondary" href="/referencias/reportar">Ir a reportes</a>
+        </div>
+    </section>
+
+    <aside class="app-card">
+        <div class="section-header">
+            <div>
+                <h2>Elementos unificados</h2>
+            </div>
+        </div>
+        <ul class="info-list">
+            <li>Paleta de colores centralizada en un solo archivo CSS.</li>
+            <li>Opciones de regresar y adelante visibles en todas las pantallas.</li>
+            <li>Tarjetas y botones reutilizables para nuevos componentes.</li>
+        </ul>
+    </aside>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page_title|default:"Sistema de Referencias" }}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'referencias/ui.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    {% block body %}
+    <div class="app-shell">
+        <header class="app-topbar">
+            <a class="brand" href="/referencias/">
+                <span class="brand-mark">RF</span>
+                <span class="brand-copy">
+                    <small>Aplicacion unificada</small>
+                    <strong>Sistema de Referencias</strong>
+                </span>
+            </a>
+
+            <div class="topbar-tools">
+                {% if user.is_authenticated %}
+                <span class="role-chip">{{ role }}</span>
+                {% endif %}
+                <nav class="app-nav" aria-label="Navegacion principal">
+                    {% if user.is_authenticated %}
+                    <a class="app-button app-button--secondary" href="/referencias/">Menu</a>
+                    {% endif %}
+                    <button class="app-button app-button--ghost" type="button" onclick="window.history.back()">Regresar</button>
+                    <button class="app-button app-button--ghost" type="button" onclick="window.history.forward()">Adelante</button>
+                </nav>
+            </div>
+        </header>
+
+        <section class="app-hero">
+            <span class="eyebrow">{{ section_label|default:"Panel principal" }}</span>
+            <h1>{{ page_title|default:"Sistema de Referencias" }}</h1>
+            <p>{{ page_description|default:"Una interfaz consistente para navegar, consultar y operar la aplicacion." }}</p>
+        </section>
+
+        {% block content %}{% endblock %}
+
+        <footer class="app-footer">
+            Colores, botones y elementos visuales centralizados para mantener la misma experiencia en toda la aplicacion.
+        </footer>
+    </div>
+    {% endblock %}
+</body>
+</html>

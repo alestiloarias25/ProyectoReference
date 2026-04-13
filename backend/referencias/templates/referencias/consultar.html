@@ -1,0 +1,50 @@
+{% extends "referencias/base.html" %}
+
+{% block title %}Consultar Referencia{% endblock %}
+
+{% block content %}
+<div class="content-grid">
+    <section class="app-card app-card--wide">
+        <div class="section-header">
+            <div>
+                <h2>Consulta de referencias</h2>
+                <p>La experiencia de consulta ahora sigue el mismo lenguaje visual del resto de la aplicacion para reducir friccion y hacer la navegacion mas intuitiva.</p>
+            </div>
+            <span class="status-chip">Vista homologada</span>
+        </div>
+
+        <div class="feature-grid">
+            <article class="feature-item">
+                <strong>Consistencia en interfaz</strong>
+                <span>La misma estructura de cabecera, hero, tarjetas y acciones se replica en cada modulo.</span>
+            </article>
+            <article class="feature-item">
+                <strong>Mejor orientacion</strong>
+                <span>Los accesos para regresar, avanzar y volver al menu estan disponibles sin depender de cada pantalla.</span>
+            </article>
+            <article class="feature-item">
+                <strong>Preparado para crecimiento</strong>
+                <span>La vista ya puede incorporar filtros, resultados y estados sin perder la coherencia del sistema.</span>
+            </article>
+        </div>
+
+        <div class="action-row">
+            <a class="app-button app-button--primary" href="/referencias/">Volver al menu</a>
+            <a class="app-button app-button--secondary" href="/referencias/contrato">Ir a contratos</a>
+        </div>
+    </section>
+
+    <aside class="app-card">
+        <div class="section-header">
+            <div>
+                <h2>Guia rapida</h2>
+            </div>
+        </div>
+        <ul class="info-list">
+            <li>Usa el boton de menu para volver al panel principal desde cualquier vista.</li>
+            <li>Usa regresar y adelante para mantener continuidad dentro del flujo del navegador.</li>
+            <li>Los nuevos componentes pueden adoptar las clases compartidas de la base visual.</li>
+        </ul>
+    </aside>
+</div>
+{% endblock %}
