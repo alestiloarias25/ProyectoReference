@@ -25,8 +25,7 @@ SECRET_KEY = 'django-insecure-*aadsh+yhc8d&wpv!+o*vl6j$(v+%u&b0t%(t72vnn_f&2llw!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['www.referenciate.com', 'referenciate-backend-production.up.railway.app']
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
