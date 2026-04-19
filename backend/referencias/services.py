@@ -110,7 +110,7 @@ class RecalculoPuntajeService:
         """
         return THistorial.objects.filter(
             TCAIDContrato__personas__TPNoDocumento=tp_no_documento,
-            TCAIDContrato__personas__TCARTipoParticipacion='ARRENDATARIO'
+            TCAIDContrato__personas__TCARTipoParticipacion__in=['ARRENDATARIO', 'CODEUDOR']
         ).select_related('TRHTipoReporte', 'TCAIDContrato')
 
     @classmethod
@@ -203,7 +203,7 @@ class RecalculoPuntajeService:
         """
         arrendatarios = ContratoArriendoRelacion.objects.filter(
             TCAIDContrato_id=tca_id_contrato,
-            TCARTipoParticipacion='ARRENDATARIO'
+            TCARTipoParticipacion__in=['ARRENDATARIO', 'CODEUDOR']
         ).values_list('TPNoDocumento', flat=True)
         
         resultados = []
@@ -224,7 +224,7 @@ class DetalleRecalculoService:
         """
         reportes = THistorial.objects.filter(
             TCAIDContrato__personas__TPNoDocumento=tp_no_documento,
-            TCAIDContrato__personas__TCARTipoParticipacion='ARRENDATARIO'
+            TCAIDContrato__personas__TCARTipoParticipacion__in=['ARRENDATARIO', 'CODEUDOR']
         ).select_related('TRHTipoReporte', 'TCAIDContrato')
         
         if not reportes.exists():

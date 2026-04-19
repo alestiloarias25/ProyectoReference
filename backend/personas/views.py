@@ -1,4 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import Persona
 from .serializers import PersonaSerializer, TEmpresasSerializer, TCiudadesSerializer
@@ -9,6 +11,20 @@ class PersonaViewSet(ModelViewSet):
     queryset = Persona.objects.all()
     serializer_class = PersonaSerializer
     permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['get'])
+    def verificar(self, request):
+        tipo_documento = request.query_params.get('tipo_documento')
+        no_documento = request.query_params.get('no_documento')
+        
+        if not tipo_documento or not no_documento:
+            return Response({"error": "Faltan parametros de busqueda"}, status=400)
+            
+        try:
+            persona = Persona.objects.get(TPTipoDocumento=tipo_documento, TPNoDocumento=no_documento)
+            return Response(PersonaSerializer(persona).data)
+        except Persona.DoesNotExist:
+            return Response({"error": "No encontrada"}, status=404)
 
 
 class TEmpresasViewSet(ModelViewSet):

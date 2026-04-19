@@ -2,14 +2,17 @@ from rest_framework import serializers
 from django.db import transaction
 import json
 from .models import ContratoArriendo, ContratoArriendoRelacion
-from contratos.models import TbienesInmuebles
+from bienesinmuebles.models import TbienesInmuebles
 from usuarios.permissions import get_user_role, ROLE_ADMINISTRADOR
 
 
 class ContratoPersonaSerializer(serializers.ModelSerializer):
+    TPTipoDocumento = serializers.CharField(write_only=True)
+
     class Meta:
         model = ContratoArriendoRelacion
         fields = [
+            'TPTipoDocumento',
             'TPNoDocumento',
             'TCARTipoParticipacion'
         ]
@@ -18,7 +21,7 @@ class ContratoPersonaSerializer(serializers.ModelSerializer):
 class ContratoArriendoSerializer(serializers.ModelSerializer):
     personas = ContratoPersonaSerializer(many=True, required=False)
     bien_inmueble_id = serializers.IntegerField(write_only=True)
-    TCAArchivoPDF = serializers.FileField(required=False, allow_null=True)
+    TCAArchivoPDF = serializers.FileField(required=True, allow_null=False)
 
     class Meta:
         model = ContratoArriendo
@@ -33,9 +36,10 @@ class ContratoArriendoSerializer(serializers.ModelSerializer):
             'TCATipoDuracion',
             'TCAValorCanonContrato',
             'TCAArchivoPDF',
+            'TBDireccion',
             'personas'
         ]
-        read_only_fields = ['username']
+        read_only_fields = ['username', 'TBDireccion']
 
     def _parse_personas_from_initial_data(self):
         raw_personas = self.initial_data.get("personas")
@@ -61,8 +65,32 @@ class ContratoArriendoSerializer(serializers.ModelSerializer):
         if not data.get("personas"):
             data["personas"] = self._parse_personas_from_initial_data()
 
+        from personas.models import Persona
+        for p in data["personas"]:
+            tipo_doc = p.get('TPTipoDocumento')
+            no_doc = p.get('TPNoDocumento')
+            if not Persona.objects.filter(TPTipoDocumento=tipo_doc, TPNoDocumento=no_doc).exists():
+                raise serializers.ValidationError(f"La persona con documento {tipo_doc} {no_doc} no está registrada.")
+
         if data['TCAFechaInicioContrato'] < data['TCAFechaContrato']:
             raise serializers.ValidationError("La fecha de inicio no puede ser anterior a la fecha del contrato.")
+
+        bien_id = data.get('bien_inmueble_id')
+        if bien_id:
+            try:
+                bien = TbienesInmuebles.objects.get(id=bien_id)
+            except TbienesInmuebles.DoesNotExist:
+                raise serializers.ValidationError({"bien_inmueble_id": "El bien inmueble no existe."})
+
+            contrato_activo = ContratoArriendo.objects.filter(
+                TBNoMatricula=bien.TBNoMatricula,
+                TBDireccion=bien.TBDireccion,
+                TCAFechaEntregaInmueble__isnull=True
+            ).exists()
+
+            if contrato_activo:
+                raise serializers.ValidationError("No se puede crear el contrato porque el inmueble tiene un contrato activo sin Fecha de Entrega.")
+
         return data
 
     def validate_TCAArchivoPDF(self, value):
@@ -104,11 +132,10 @@ class ContratoArriendoSerializer(serializers.ModelSerializer):
 
             # Crear relaciones con personas
             for persona in personas_data:
+                persona.pop('TPTipoDocumento', None)
                 ContratoArriendoRelacion.objects.create(
                     TCAIDContrato=contrato,
-                    TPNoDocumento=persona['TPNoDocumento'],
-                    TCARTipoParticipacion=persona['TCARTipoParticipacion']
+                    **persona
                 )
 
         return contrato
-

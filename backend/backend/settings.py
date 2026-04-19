@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-*aadsh+yhc8d&wpv!+o*vl6j$(v+%u&b0t%(t72vnn_f&2llw!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['www.referenciate.com', 'referenciate-backend-production.up.railway.app', 'localhost']
+ALLOWED_HOSTS = ['www.referenciate.com', 'referenciate-backend-production.up.railway.app', 'localhost', '127.0.0.1']
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'usuarios',  # tu app (creada por ti) 
     'referencias',
     'personas',
-    'contratos',
+    'bienesinmuebles',
     'contrato',
     'tablas_maestras',  # Nueva app para tablas maestras
 ]
@@ -84,41 +84,22 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'backend.wsgi.application'
-
+#WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql',
-#        'NAME': 'referencedb',
-#        'USER': 'postgres',
-#        'PASSWORD': '12345',
-#        'HOST': 'localhost',
-#        'PORT': '5432',
-#    }
-#}
-
-
-
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
+        'NAME': 'referencedb',
         'USER': 'postgres',
-#       'USER': 'postgres.dbrwrxnthrfzwnkgmzmd',
-        'PASSWORD': 'ehap1044872207246A$',
-        'HOST': 'db.dbrwrxnthrfzwnkgmzmd.supabase.co',
-#       'HOST': 'aws-0-us-east-1.pooler.supabase.com',
+        'PASSWORD': '12345',
+        'HOST': 'localhost',
         'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
     }
-        
-    
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

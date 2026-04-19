@@ -6,9 +6,11 @@ from .views import (
     login,
     admin_users,
     admin_user_detail,
+    check_document,
 )
 
 urlpatterns = [
+    path("check-document/", check_document),
     path("register/", register),
     path("login/", login),
     path("forgot-password/", forgot_password),

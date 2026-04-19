@@ -39,14 +39,26 @@ class THistorialViewSet(ModelViewSet):
             return queryset
         return queryset.filter(TUUserName=self.request.user.username)
 
+    def get_serializer(self, *args, **kwargs):
+        if "data" in kwargs:
+            data = kwargs["data"]
+            if isinstance(data, list):
+                kwargs["many"] = True
+        return super().get_serializer(*args, **kwargs)
+
     def perform_create(self, serializer):
         """Captura automáticamente el usuario actual al crear un reporte"""
         # Obtén el nombre de usuario del usuario autenticado
         username = self.request.user.username
-        historial = serializer.save(TUUserName=username)
+        instances = serializer.save(TUUserName=username)
         
+        if not isinstance(instances, list):
+            instances = [instances]
+            
         # Dispara el recálculo de puntaje automáticamente
-        self._recalcular_puntajes_arrendatarios(historial.TCAIDContrato_id)
+        contratos_ids = set([inst.TCAIDContrato_id for inst in instances])
+        for cid in contratos_ids:
+            self._recalcular_puntajes_arrendatarios(cid)
 
     def perform_update(self, serializer):
         """Al actualizar un reporte, recalcula los puntajes"""

@@ -42,6 +42,7 @@ class TPuntajeColorSerializer(serializers.ModelSerializer):
 class THistorialSerializer(serializers.ModelSerializer):
     TRHTipoReporte_nombre = serializers.CharField(source='TRHTipoReporte.TRHTipoReporte', read_only=True)
     TCAIDContrato_info = serializers.SerializerMethodField(read_only=True)
+    fecha_entrega_inmueble = serializers.DateField(write_only=True, required=False)
 
     class Meta:
         model = THistorial
@@ -54,7 +55,8 @@ class THistorialSerializer(serializers.ModelSerializer):
             'TRHValorAdeudado',
             'TRHObservacion',
             'TRHFechaReporte',
-            'TUUserName'
+            'TUUserName',
+            'fecha_entrega_inmueble'
         ]
         read_only_fields = ['TRHId', 'TRHFechaReporte']
 
@@ -99,4 +101,21 @@ class THistorialSerializer(serializers.ModelSerializer):
                 f"Ya existe un reporte del tipo '{tipo_reporte.TRHTipoReporte}' para este contrato."
             )
 
+        if tipo_reporte:
+            tipo_cod = getattr(tipo_reporte, 'TRHTipoReporte', '')
+            if tipo_cod in ['AR', 'DA', 'SE', 'US']:
+                if not data.get('fecha_entrega_inmueble'):
+                    raise serializers.ValidationError({"fecha_entrega_inmueble": f"Se requiere la Fecha de Entrega del Bien Inmueble para el tipo de reporte {tipo_cod}."})
+
         return data
+
+    def create(self, validated_data):
+        fecha_entrega = validated_data.pop('fecha_entrega_inmueble', None)
+        historial = super().create(validated_data)
+        
+        if fecha_entrega:
+            contrato = historial.TCAIDContrato
+            contrato.TCAFechaEntregaInmueble = fecha_entrega
+            contrato.save()
+            
+        return historial

@@ -19,10 +19,10 @@ from .serializers import AdminUserSerializer
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
-    username = request.data.get("username")
+    no_documento = request.data.get("no_documento")
     password = request.data.get("password")
 
-    user = authenticate(username=username, password=password)
+    user = authenticate(username=no_documento, password=password)
 
     if user is None:
         return Response({"error": "Invalid credentials"}, status=400)
@@ -50,12 +50,16 @@ def login(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
-    username = request.data.get("username")
+    tipo_documento = request.data.get("tipo_documento")
+    no_documento = request.data.get("no_documento")
+    first_name = request.data.get("first_name", "")
+    last_name = request.data.get("last_name", "")
+    celular = request.data.get("celular", "")
     email = request.data.get("email")
     password = request.data.get("password")
     role = request.data.get("role")
 
-    if not username or not email or not password or not role:
+    if not no_documento or not tipo_documento or not email or not password or not role:
         return Response({"error": "All fields are required"}, status=400)
 
     valid_roles = {choice[0] for choice in UserProfile.ROLE_CHOICES}
@@ -63,21 +67,24 @@ def register(request):
     if role not in valid_roles:
         return Response({"error": "Invalid role"}, status=400)
 
-    if User.objects.filter(username=username).exists():
-        return Response({"error": "Username already exists"}, status=400)
+    if User.objects.filter(username=no_documento).exists():
+        return Response({"error": "Document number already exists"}, status=400)
 
     if User.objects.filter(email=email).exists():
         return Response({"error": "Email already registered"}, status=400)
 
     user = User.objects.create_user(
-        username=username,
+        username=no_documento,
         email=email,
-        password=password
+        password=password,
+        first_name=first_name,
+        last_name=last_name
     )
 
     UserProfile.objects.create(
         user=user,
-        role=role
+        role=role,
+        celular=celular
     )
 
     token, created = Token.objects.get_or_create(user=user)
@@ -88,6 +95,21 @@ def register(request):
         "token": token.key,
         "role": role,
     })
+
+
+# ======================================
+# CHECK DOCUMENT
+# ======================================
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def check_document(request):
+    no_documento = request.query_params.get("no_documento")
+    if not no_documento:
+        return Response({"error": "no_documento is required"}, status=400)
+    
+    exists = User.objects.filter(username=no_documento).exists()
+    return Response({"exists": exists})
 
 
 # ======================================

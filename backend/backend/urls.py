@@ -25,7 +25,7 @@ from autores.views import AutorViewSet, ProfesionViewSet
 from django.contrib.auth import views as auth_views
 from personas.views import PersonaViewSet
 from contrato.views import ContratoArriendoViewSet
-from contratos.views import TbienesInmueblesViewSet
+from bienesinmuebles.views import TbienesInmueblesViewSet
 
 router = DefaultRouter()
 router.register(r'autores', AutorViewSet)
