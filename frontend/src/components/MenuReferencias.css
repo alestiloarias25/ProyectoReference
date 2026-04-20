@@ -1,0 +1,44 @@
+.mr-role-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.mr-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.mr-card-tags span {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.menu-grid--admin {
+  grid-template-columns: repeat(3, minmax(220px, 280px));
+  justify-content: center;
+}
+
+.menu-featured-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  .menu-grid--admin {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}

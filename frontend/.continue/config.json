@@ -1,0 +1,17 @@
+{
+  "models": [
+    {
+      "title": "GPT-4",
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "apiKey": "YOUR_API_KEY"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Codeium",
+    "provider": "codeium"
+  },
+  "embeddingsProvider": {
+    "provider": "transformers"
+  }
+}

@@ -1,0 +1,247 @@
+.cp-search-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+}
+
+.cp-result {
+  display: grid;
+  gap: 20px;
+  border-top: 5px solid #2563eb;
+}
+
+.cp-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.cp-score-card,
+.cp-level-card,
+.cp-panel {
+  padding: 20px;
+  border-radius: 18px;
+  background: #f8fbff;
+  border: 1px solid rgba(24, 50, 74, 0.08);
+}
+
+.cp-score-label {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.cp-score-card strong,
+.cp-level-card strong {
+  display: block;
+  font-size: 2.4rem;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.cp-level-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.cp-level-card .cp-score-label {
+  background: rgba(255, 255, 255, 0.25);
+  color: inherit;
+}
+
+.cp-grade-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.cp-level-caption {
+  margin-bottom: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.cp-score-card span:last-child,
+.cp-info-list {
+  color: #5b7288;
+  line-height: 1.6;
+}
+
+.cp-level-card span:last-child {
+  color: inherit;
+  opacity: 0.92;
+  line-height: 1.6;
+}
+
+.cp-gauge-panel {
+  display: grid;
+  grid-template-columns: minmax(320px, 1.15fr) minmax(260px, 0.85fr);
+  gap: 18px;
+}
+
+.cp-gauge-card,
+.cp-scale-card {
+  padding: 20px;
+  border-radius: 18px;
+  background: #f8fbff;
+  border: 1px solid rgba(24, 50, 74, 0.08);
+}
+
+.cp-gauge-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 260px;
+}
+
+.cp-gauge-svg {
+  width: min(100%, 360px);
+  height: auto;
+  filter: drop-shadow(0 10px 18px rgba(16, 36, 58, 0.08));
+}
+
+.cp-gauge-center {
+  position: absolute;
+  bottom: 36px;
+  text-align: center;
+}
+
+.cp-gauge-center strong {
+  display: block;
+  font-size: 2.5rem;
+  line-height: 1;
+  color: #10243a;
+}
+
+.cp-gauge-center span {
+  display: block;
+  margin-top: 6px;
+  color: #5b7288;
+  font-weight: 700;
+}
+
+.cp-scale-list {
+  display: grid;
+  gap: 12px;
+}
+
+.cp-scale-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(24, 50, 74, 0.08);
+}
+
+.cp-scale-item.is-active {
+  border-color: rgba(37, 99, 235, 0.22);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.08);
+}
+
+.cp-scale-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cp-scale-item strong,
+.cp-scale-item span {
+  display: block;
+}
+
+.cp-scale-item span {
+  color: #5b7288;
+  font-size: 0.92rem;
+}
+
+.cp-scale-values {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(24, 50, 74, 0.08);
+  color: #5b7288;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.cp-info-list {
+  display: grid;
+  gap: 8px;
+}
+
+.cp-level--excelente {
+  border-top-color: #15803d;
+}
+
+.cp-level--excelente .cp-level-card {
+  color: #166534;
+}
+
+.cp-level--bueno {
+  border-top-color: #0891b2;
+}
+
+.cp-level--bueno .cp-level-card {
+  color: #155e75;
+}
+
+.cp-level--regular {
+  border-top-color: #ca8a04;
+}
+
+.cp-level--regular .cp-level-card {
+  color: #854d0e;
+}
+
+.cp-level--malo {
+  border-top-color: #ea580c;
+}
+
+.cp-level--malo .cp-level-card {
+  color: #9a3412;
+}
+
+.cp-level--critico {
+  border-top-color: #dc2626;
+}
+
+.cp-level--critico .cp-level-card {
+  color: #991b1b;
+}
+
+@media (max-width: 720px) {
+  .cp-search-form {
+    grid-template-columns: 1fr;
+  }
+
+  .cp-gauge-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .cp-scale-values {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
