@@ -8,7 +8,7 @@ export default function AuthShell({ eyebrow, title, subtitle, children, footerLi
       <div className="auth-shell">
         <div className="auth-card">
           <div className="auth-brand">
-            <span className="app-brand-mark">RF</span>
+            <img className="app-brand-logo" src="/images/logo.png" alt="RF Logo" />
             <div className="app-brand-copy">
               <small>Acceso unificado</small>
               <strong>Sistema de Referencias</strong>

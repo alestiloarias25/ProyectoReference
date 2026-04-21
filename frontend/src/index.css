@@ -1,24 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Clean Corporate Light Theme */
-  --bg-primary: #F3F4F6; /* Light gray background */
+  /* Rentec Direct Inspired Theme */
+  --bg-primary: #F8FAFC; /* Light gray background */
   --bg-secondary: #FFFFFF; /* Pure white cards */
   
-  --text-primary: #111827; /* Dark gray for main text */
-  --text-secondary: #4B5563; /* Medium gray for subtitles */
-  --text-muted: #9CA3AF;
+  --text-primary: #1E293B; /* Dark slate for main text */
+  --text-secondary: #475569; /* Medium slate for subtitles */
+  --text-muted: #94A3B8;
   
-  --accent-primary: #1D4ED8; /* Trust Blue */
-  --accent-hover: #1E40AF;
+  --accent-primary: #153E5C; /* Trust Dark Blue */
+  --accent-hover: #11324A;
   
-  --success: #10B981; /* Success Green */
-  --success-hover: #059669;
+  --success: #22C55E; /* Vibrant Green */
+  --success-hover: #16A34A;
   
   --danger: #EF4444;
-  --warning: #F59E0B;
+  --warning: #F59E0B; /* Orange/Gold accent */
   
-  --border-color: #E5E7EB;
+  --border-color: #E2E8F0;
   
   /* Flat shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);

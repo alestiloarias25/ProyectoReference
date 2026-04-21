@@ -12,6 +12,8 @@ import ContratoWizard from "./pages/contratos/ContratoWizard";
 import Reportar from "./pages/Reportar";
 import ConsultarPuntajeArrendatario from "./pages/ConsultarPuntajeArrendatario";
 import AdminPanel from "./pages/AdminPanel";
+import AdministrarBienesInmuebles from "./pages/AdministrarBienesInmuebles";
+import ConsultarBienesInmuebles from "./pages/ConsultarBienesInmuebles";
 
 
 function App() {
@@ -89,6 +91,24 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["ADMINISTRADOR"]}>
               <AdminPanel />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/inmuebles/administrar"
+          element={
+            <ProtectedRoute allowedRoles={["ADMINISTRADOR", "ARRENDADOR"]}>
+              <AdministrarBienesInmuebles />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/inmuebles/consultar"
+          element={
+            <ProtectedRoute allowedRoles={["ADMINISTRADOR", "ARRENDADOR", "ARRENDATARIO"]}>
+              <ConsultarBienesInmuebles />
             </ProtectedRoute>
           }
         />

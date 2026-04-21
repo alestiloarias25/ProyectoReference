@@ -1,20 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Clean Corporate Light Theme Variables */
-  --app-bg: #F3F4F6; /* Light Gray */
-  --app-bg-soft: #F9FAFB;
+  /* Clean Corporate Light Theme Variables - Rentec Direct Inspired */
+  --app-bg: #F8FAFC; /* Light Gray/Blue */
+  --app-bg-soft: #F1F5F9;
   --app-surface: #FFFFFF; /* Pure White */
   --app-surface-alt: #F8FAFC;
-  --app-border: #E5E7EB;
+  --app-border: #E2E8F0;
   
-  --app-text: #111827; /* Near Black */
-  --app-text-soft: #4B5563; /* Medium Gray */
-  --app-text-muted: #9CA3AF;
+  --app-text: #1E293B; /* Slate 800 */
+  --app-text-soft: #475569; /* Slate 600 */
+  --app-text-muted: #94A3B8;
   
-  --app-primary: #1D4ED8; /* Trust/Corporate Blue */
-  --app-primary-dark: #1E3A8A;
-  --app-primary-soft: #EFF6FF;
+  --app-brand: #153E5C; /* Dark Blue from Rentec */
+  --app-brand-dark: #0B2538;
+  
+  --app-primary: #22C55E; /* Vibrant Green Action Button */
+  --app-primary-dark: #16A34A;
+  --app-primary-soft: #DCFCE7;
+  
+  --app-accent: #F59E0B; /* Orange Highlight */
   
   --app-success: #10B981; /* Emerald Green */
   --app-success-dark: #059669;
@@ -72,7 +77,23 @@ textarea {
   justify-content: center;
   padding: 26px 14px;
   min-height: 100vh;
-  background-color: var(--app-bg-soft);
+  background: linear-gradient(135deg, var(--app-brand) 0%, var(--app-brand-dark) 100%);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.app-ui--auth::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 50%;
+  background: rgba(255, 255, 255, 0.03);
+  transform: skewX(-15deg);
+  transform-origin: top right;
+  pointer-events: none;
 }
 
 .auth-shell {
@@ -128,11 +149,18 @@ textarea {
   width: 44px;
   height: 44px;
   border-radius: var(--app-radius-sm);
-  background: var(--app-primary);
+  background: var(--app-brand);
   color: #fff;
   font-weight: 700;
   letter-spacing: 0.05em;
   font-size: 1.1rem;
+}
+
+.app-brand-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--app-radius-sm);
+  object-fit: cover;
 }
 
 .app-brand-copy {
@@ -236,13 +264,13 @@ textarea {
 
 .app-button--secondary {
   background: var(--app-surface);
-  color: var(--app-text);
-  border-color: var(--app-border);
+  color: var(--app-primary-dark);
+  border-color: var(--app-primary);
   box-shadow: var(--app-shadow-sm);
 }
 
 .app-button--secondary:hover {
-  background: var(--app-bg-soft);
+  background: var(--app-primary-soft);
 }
 
 .app-button--ghost {
@@ -251,7 +279,7 @@ textarea {
 }
 
 .app-button--ghost:hover {
-  background: var(--app-bg);
+  background: var(--app-bg-soft);
   color: var(--app-text);
 }
 
@@ -279,8 +307,9 @@ textarea {
   gap: 24px;
   padding: 32px;
   margin-bottom: 24px;
-  background: var(--app-surface);
-  border: 1px solid var(--app-border);
+  background: var(--app-brand);
+  color: #fff;
+  border: 1px solid var(--app-brand-dark);
   border-radius: var(--app-radius-md);
   box-shadow: var(--app-shadow-sm);
 }
@@ -291,7 +320,7 @@ textarea {
   font-size: clamp(1.75rem, 3vw, 2.25rem);
   font-weight: 700;
   line-height: 1.2;
-  color: var(--app-text);
+  color: inherit; /* inherit from container */
   letter-spacing: -0.02em;
 }
 
@@ -303,6 +332,15 @@ textarea {
   color: var(--app-text-soft);
   line-height: 1.5;
   font-size: 1rem;
+}
+
+.app-hero-copy p,
+.auth-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.app-text-accent {
+  color: var(--app-accent);
 }
 
 .app-hero-actions {
@@ -582,12 +620,16 @@ textarea {
   grid-column: 1 / -1;
   max-width: 100%;
   justify-self: stretch;
-  background: var(--app-primary-soft);
-  border-color: var(--app-primary-soft);
+  background: var(--app-brand);
+  border-color: var(--app-brand-dark);
 }
 
 .menu-card--featured h3 {
-  color: var(--app-primary-dark);
+  color: #fff;
+}
+
+.menu-card--featured p {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .menu-impact {

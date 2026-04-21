@@ -50,7 +50,7 @@ export default function AppShell({
       <div className="app-shell">
         <header className="app-topbar">
           <button className="app-brand" type="button" onClick={() => navigate(token ? "/referencias" : "/login")}>
-            <span className="app-brand-mark">RF</span>
+            <img className="app-brand-logo" src="/images/logo.png" alt="RF Logo" />
             <span className="app-brand-copy">
               <small>Panel unificado</small>
               <strong>Sistema de Referencias</strong>

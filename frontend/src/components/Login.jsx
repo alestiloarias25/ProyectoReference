@@ -42,8 +42,8 @@ function Login() {
   return (
     <AuthShell
       eyebrow="Acceso principal"
-      title="Iniciar sesion"
-      subtitle="Ingresa con el mismo estilo de formularios, botones y colores del menu principal."
+      title={<>Inicia sesión y <span className="app-text-accent">gestiona</span></>}
+      subtitle="Ingresa para administrar tus referencias y reportes con nuestra nueva plataforma corporativa."
       footerLinks={[
         { to: "/register", label: "Crear cuenta" },
         { to: "/forgot", label: "Olvide mi contrasena" },

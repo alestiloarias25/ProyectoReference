@@ -42,3 +42,33 @@
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 }
+
+.menu-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.menu-card-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-bottom: 1px solid var(--app-border);
+  background-color: var(--app-bg-soft);
+  transition: transform var(--app-transition);
+}
+
+.menu-card:hover .menu-card-img {
+  transform: scale(1.02);
+}
+
+.menu-card-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Fix for featured card */
+.menu-card--featured .menu-card-content {
+  padding: 32px;
+}

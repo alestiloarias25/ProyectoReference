@@ -15,6 +15,8 @@ const Reportar = () => {
   const [submitting, setSubmitting] = useState(false);
   const [modal, setModal] = useState({ isOpen: false, title: "", message: "", type: "info" });
 
+  const [existingReports, setExistingReports] = useState([]);
+  const [editingReportId, setEditingReportId] = useState(null);
   const [reportesList, setReportesList] = useState([]);
   const [globalFechaEntrega, setGlobalFechaEntrega] = useState("");
 
@@ -57,6 +59,16 @@ const Reportar = () => {
       });
   }, [token, navigate]);
 
+  const loadExistingReports = (contratoId) => {
+    axios.get(`http://127.0.0.1:8000/referencias/api/historial/?TCAIDContrato=${contratoId}`, {
+      headers: { Authorization: `Token ${token}` },
+    }).then(res => {
+      setExistingReports(res.data);
+    }).catch(err => {
+      console.error("Error cargando reportes existentes", err);
+    });
+  };
+
   const handleContratoChange = (e) => {
     const contratoId = parseInt(e.target.value, 10);
     const contrato = contratos.find((c) => c.TCAIDContrato === contratoId);
@@ -64,12 +76,42 @@ const Reportar = () => {
     setContratoInfo(contrato);
     setReportesList([]);
     setGlobalFechaEntrega("");
+    setEditingReportId(null);
     setForm({ TRHTipoReporte: "", TRHValorAdeudado: "", TRHObservacion: "" });
+    if (contratoId) {
+      loadExistingReports(contratoId);
+    } else {
+      setExistingReports([]);
+    }
   };
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value.toUpperCase() });
+  };
+
+  const handleEditReport = (report) => {
+    setEditingReportId(report.TRHId);
+    setForm({
+      TRHTipoReporte: report.TRHTipoReporte,
+      TRHValorAdeudado: report.TRHValorAdeudado || "",
+      TRHObservacion: report.TRHObservacion || "",
+    });
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  };
+
+  const handleDeleteReport = (reportId) => {
+    if (window.confirm("¿Estás seguro de que deseas eliminar este reporte?")) {
+      axios.delete(`http://127.0.0.1:8000/referencias/api/historial/${reportId}/`, {
+        headers: { Authorization: `Token ${token}` }
+      }).then(() => {
+        showModal("Exito", "Reporte eliminado correctamente", "success");
+        loadExistingReports(selectedContrato);
+      }).catch(err => {
+        const errorMsg = err.response?.data ? JSON.stringify(err.response.data) : err.message;
+        showModal("Error", `Error al eliminar: ${errorMsg}`, "error");
+      });
+    }
   };
 
   const addToList = (e) => {
@@ -85,12 +127,40 @@ const Reportar = () => {
       return;
     }
 
+    if (editingReportId) {
+      setSubmitting(true);
+      axios.put(`http://127.0.0.1:8000/referencias/api/historial/${editingReportId}/`, {
+        TCAIDContrato: selectedContrato,
+        TRHTipoReporte: form.TRHTipoReporte,
+        TRHValorAdeudado: form.TRHValorAdeudado ? parseFloat(form.TRHValorAdeudado) : null,
+        TRHObservacion: form.TRHObservacion,
+      }, {
+        headers: { Authorization: `Token ${token}`, "Content-Type": "application/json" }
+      }).then(() => {
+        showModal("Exito", "Reporte actualizado correctamente", "success");
+        setForm({ TRHTipoReporte: "", TRHValorAdeudado: "", TRHObservacion: "" });
+        setEditingReportId(null);
+        loadExistingReports(selectedContrato);
+      }).catch(err => {
+        const errorMsg = err.response?.data ? JSON.stringify(err.response.data) : err.message;
+        showModal("Error", `Error al actualizar: ${errorMsg}`, "error");
+      }).finally(() => {
+        setSubmitting(false);
+      });
+      return;
+    }
+
     if (reportesList.some((r) => r.TRHTipoReporte === form.TRHTipoReporte)) {
       showModal("Atención", "Este tipo de reporte ya está en la lista.", "error");
       return;
     }
 
     setReportesList([...reportesList, { ...form }]);
+    setForm({ TRHTipoReporte: "", TRHValorAdeudado: "", TRHObservacion: "" });
+  };
+
+  const cancelEdit = () => {
+    setEditingReportId(null);
     setForm({ TRHTipoReporte: "", TRHValorAdeudado: "", TRHObservacion: "" });
   };
 
@@ -132,7 +202,8 @@ const Reportar = () => {
       })
       .then(() => {
         showModal("Exito", "Reportes ingresados exitosamente", "success");
-        navigate("/referencias");
+        setReportesList([]);
+        loadExistingReports(selectedContrato);
       })
       .catch((err) => {
         const errorMsg = err.response?.data ? JSON.stringify(err.response.data) : err.message;
@@ -223,10 +294,37 @@ const Reportar = () => {
             </section>
           )}
 
+          {selectedContrato && existingReports.length > 0 && (
+            <section className="app-surface">
+              <div className="app-section-title">
+                <h2>Reportes Existentes ({existingReports.length})</h2>
+              </div>
+              <div className="wizard-choice-list" style={{ marginBottom: '20px' }}>
+                {existingReports.map((r) => (
+                  <div key={r.TRHId} className="wizard-choice">
+                    <div>
+                      <strong>{r.TRHTipoReporte}</strong>
+                      {r.TRHValorAdeudado && <small>Valor Adeudado: ${r.TRHValorAdeudado}</small>}
+                      {r.TRHObservacion && <small>Obs: {r.TRHObservacion}</small>}
+                    </div>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      <button className="app-button app-button--secondary" type="button" onClick={() => handleEditReport(r)}>
+                        Modificar
+                      </button>
+                      <button className="app-button app-button--danger" type="button" onClick={() => handleDeleteReport(r.TRHId)}>
+                        Eliminar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {selectedContrato && (
             <section className="app-surface">
               <div className="app-section-title">
-                <h2>Añadir reporte a la lista</h2>
+                <h2>{editingReportId ? "Modificar reporte" : "Añadir reporte a la lista"}</h2>
               </div>
 
               <form onSubmit={addToList} className="app-form-grid" autoComplete="off">
@@ -279,8 +377,13 @@ const Reportar = () => {
 
                 <div className="app-actions" style={{ gridColumn: "1 / -1" }}>
                   <button className="app-button app-button--secondary" type="submit">
-                    Añadir a la lista
+                    {editingReportId ? "Guardar Cambios" : "Añadir a la lista"}
                   </button>
+                  {editingReportId && (
+                    <button className="app-button app-button--danger" type="button" onClick={cancelEdit}>
+                      Cancelar Edición
+                    </button>
+                  )}
                 </div>
               </form>
             </section>

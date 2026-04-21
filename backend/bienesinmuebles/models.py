@@ -16,6 +16,11 @@ class TbienesInmuebles(models.Model):
                 name='uq_tbienes_matricula_direccion'
             )
         ]
-    
-    
-    
+
+class FotoInmueble(models.Model):
+    inmueble = models.ForeignKey(TbienesInmuebles, on_delete=models.CASCADE, related_name='fotos')
+    imagen = models.ImageField(upload_to='inmuebles/')
+    fecha_subida = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "tfotosinmueble"

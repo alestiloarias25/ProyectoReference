@@ -35,9 +35,14 @@ class THistorialViewSet(ModelViewSet):
 
     def get_queryset(self):
         queryset = THistorial.objects.all()
-        if get_user_role(self.request.user) == "ADMINISTRADOR":
-            return queryset
-        return queryset.filter(TUUserName=self.request.user.username)
+        if get_user_role(self.request.user) != "ADMINISTRADOR":
+            queryset = queryset.filter(TUUserName=self.request.user.username)
+            
+        contrato_id = self.request.query_params.get('TCAIDContrato', None)
+        if contrato_id is not None:
+            queryset = queryset.filter(TCAIDContrato_id=contrato_id)
+            
+        return queryset
 
     def get_serializer(self, *args, **kwargs):
         if "data" in kwargs:
