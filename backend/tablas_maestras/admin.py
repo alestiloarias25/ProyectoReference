@@ -26,19 +26,19 @@ class TEmpresasAdmin(admin.ModelAdmin):
 
 @admin.register(TCiudades)
 class TCiudadesAdmin(admin.ModelAdmin):
-    list_display = ['TCId', 'TCDescripcion', 'TCNombre', 'TCDepartamento', 'TCPais', 'TCActivo', 'TCFechaCreacion']
-    list_filter = ['TCActivo', 'TCPais', 'TCDepartamento', 'TCFechaCreacion']
-    search_fields = ['TCDescripcion', 'TCNombre', 'TCCodigo', 'TCDepartamento']
+    list_display = ['TCId', 'TCNombre', 'TCDepartamento', 'TCPais', 'TCFechaCreacion']
+    list_filter = ['TCPais', 'TCDepartamento', 'TCFechaCreacion']
+    search_fields = ['TCNombre', 'TCDepartamento']
     readonly_fields = ['TCId', 'TCFechaCreacion', 'TCFechaActualizacion']
     fieldsets = (
         ('Información Básica', {
-            'fields': ('TCId', 'TCDescripcion', 'TCNombre', 'TCCodigo')
+            'fields': ('TCId', 'TCNombre')
         }),
         ('Ubicación Geográfica', {
             'fields': ('TCDepartamento', 'TCPais')
         }),
         ('Estado', {
-            'fields': ('TCActivo', 'TCFechaCreacion', 'TCFechaActualizacion')
+            'fields': ('TCFechaCreacion', 'TCFechaActualizacion')
         }),
     )
 

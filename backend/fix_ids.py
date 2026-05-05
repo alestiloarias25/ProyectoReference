@@ -16,10 +16,10 @@ for emp, new_id in zip(empresas_null, ids_to_assign):
     print(f"Updated Empresa {emp.TEDescripcion} to TEId {new_id}")
 
 # Fix TCiudades
-ciudades_null = TCiudades.objects.filter(TCId__isnull=True).order_by('TCDescripcion')
+ciudades_null = TCiudades.objects.filter(TCId__isnull=True).order_by('TCNombre')
 ids_to_assign = [3, 4, 5]  # Based on the foreign keys
 for ciu, new_id in zip(ciudades_null, ids_to_assign):
     TCiudades.objects.filter(pk=ciu.pk).update(TCId=new_id)
-    print(f"Updated Ciudad {ciu.TCDescripcion} to TCId {new_id}")
+    print(f"Updated Ciudad {ciu.TCNombre} to TCId {new_id}")
 
 print("Done fixing IDs")

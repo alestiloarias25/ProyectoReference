@@ -20,14 +20,13 @@ class TCiudadesTestCase(TestCase):
     def setUp(self):
         TCiudades.objects.create(
             TCNombre="Bogotá",
-            TCDescripcion="Bogotá",
             TCDepartamento="Cundinamarca",
             TCPais="Colombia"
         )
 
     def test_ciudad_created(self):
         ciudad = TCiudades.objects.get(TCNombre="Bogotá")
-        self.assertEqual(ciudad.TCDescripcion, "Bogotá")
+        self.assertEqual(ciudad.TCNombre, "Bogotá")
 
 
 class TPuntajeColorTestCase(TestCase):

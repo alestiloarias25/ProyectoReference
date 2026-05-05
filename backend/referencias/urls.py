@@ -5,6 +5,7 @@ from . import views
 router = DefaultRouter()
 router.register(r'tiporeporte', views.TTipoReporteViewSet, basename='tiporeporte')
 router.register(r'historial', views.THistorialViewSet, basename='historial')
+router.register(r'pagos', views.ThistorialPagosViewSet, basename='pagos')
 router.register(r'puntajecolor', views.TPuntajeColorViewSet, basename='puntajecolor')
 router.register(r'consultar-puntaje', views.ConsultarPuntajeArrendatarioViewSet, basename='consultar-puntaje')
 

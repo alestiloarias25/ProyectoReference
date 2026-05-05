@@ -32,9 +32,6 @@ class TCiudades(models.Model):
     TCNombre = models.CharField(max_length=100, blank=True, null=True, help_text="Nombre de la ciudad")
     TCDepartamento = models.CharField(max_length=100, blank=True, null=True, help_text="Departamento/Provincia")
     TCPais = models.CharField(max_length=100, blank=True, null=True, help_text="País")
-    TCDescripcion = models.CharField(max_length=100, help_text="Descripción corta de la ciudad")
-    TCCodigo = models.CharField(max_length=10, blank=True, null=True, unique=True, help_text="Código único de la ciudad")
-    TCActivo = models.BooleanField(default=True, help_text="Indica si la ciudad está activa")
     TCFechaCreacion = models.DateTimeField(auto_now_add=True)
     TCFechaActualizacion = models.DateTimeField(auto_now=True)
     
@@ -45,7 +42,8 @@ class TCiudades(models.Model):
         ordering = ['TCId']
     
     def __str__(self):
-        return f"{self.TCId} - {self.TCDescripcion}"
+        nombre = (self.TCNombre or "").strip()
+        return f"{self.TCId} - {nombre or self.TCId}"
 
 
 class TPuntajeColor(models.Model):

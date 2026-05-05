@@ -31,7 +31,7 @@ class TCiudadesViewSet(ModelViewSet):
     serializer_class = TCiudadesSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ['TCNombre', 'TCDescripcion', 'TCCodigo']
+    search_fields = ['TCNombre', 'TCDepartamento']
     ordering_fields = ['TCId', 'TCNombre', 'TCFechaCreacion']
     ordering = ['TCId']
 

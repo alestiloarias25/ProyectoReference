@@ -21,7 +21,6 @@ const initialCiudad = {
   TCNombre: "",
   TCDepartamento: "",
   TCPais: "",
-  TCDescripcion: "",
 };
 
 const initialPersonaForm = {
@@ -92,7 +91,7 @@ export default function PasoPersonas({ onNext }) {
       ciudad?.TCDepartamento?.trim(),
       ciudad?.TCPais?.trim(),
     ].filter(Boolean);
-    return parts.length > 0 ? parts.join(" - ") : ciudad?.TCDescripcion?.trim() || `Ciudad ${ciudad?.TCId ?? ""}`;
+    return parts.length > 0 ? parts.join(" - ") : `Ciudad ${ciudad?.TCId ?? ""}`;
   };
 
   const resetPersonaFlow = () => {
@@ -125,20 +124,53 @@ export default function PasoPersonas({ onNext }) {
       .get(API_CIUDADES, { headers: { Authorization: `Token ${token}` } })
       .then((res) => setCiudades(res.data))
       .catch((err) => console.error("Error cargando ciudades", err));
+
+    // Auto-load Arrendador
+    const role = localStorage.getItem("role");
+    const userDoc = localStorage.getItem("user");
+    if (role === "ARRENDADOR" && userDoc) {
+      axios
+        .get(`http://127.0.0.1:8000/api/persona/${userDoc}/`, {
+          headers: { Authorization: `Token ${token}` }
+        })
+        .then((res) => {
+          setSelectedPersonas((prev) => {
+            if (!prev.some((p) => p.TPNoDocumento === res.data.TPNoDocumento)) {
+              return [...prev, res.data];
+            }
+            return prev;
+          });
+        })
+        .catch((err) => console.error("Error auto-cargando arrendador", err));
+    }
   }, [token]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value.toUpperCase() });
+    const normalizedValue = typeof value === "string" ? value.toUpperCase() : value;
+    setForm((prev) => ({ ...prev, [name]: normalizedValue }));
   };
 
   const buscarPersona = () => {
-    const documento = form.TPNoDocumento.trim();
-    const tipoDocumento = form.TPTipoDocumento;
+    const documento = String((form.TPNoDocumento ?? "")).trim();
+    const tipoDocumento = String((form.TPTipoDocumento ?? "")).trim();
 
-    if (!tipoDocumento || !documento) {
+    const selectedTipoDocumento = tipoDocumento || document.querySelector('select[name="TPTipoDocumento"]')?.value || "";
+    const enteredDocumento = documento || document.querySelector('input[name="TPNoDocumento"]')?.value || "";
+
+    const normalizedTipoDocumento = String(selectedTipoDocumento).trim();
+    const normalizedDocumento = String(enteredDocumento).trim();
+
+    if (!normalizedTipoDocumento || !normalizedDocumento) {
       showModal("Atención", "Debes seleccionar el Tipo y digitar el No. de Documento para buscar la persona", "error");
       return;
+    }
+
+    if (!tipoDocumento && normalizedTipoDocumento) {
+      setForm((prev) => ({ ...prev, TPTipoDocumento: normalizedTipoDocumento }));
+    }
+    if (!documento && normalizedDocumento) {
+      setForm((prev) => ({ ...prev, TPNoDocumento: normalizedDocumento.toUpperCase() }));
     }
 
     setSearchingPersona(true);
@@ -147,7 +179,7 @@ export default function PasoPersonas({ onNext }) {
     setSearchMessage("");
 
     axios
-      .get(`${API_URL}verificar/?tipo_documento=${encodeURIComponent(tipoDocumento)}&no_documento=${encodeURIComponent(documento)}`, {
+      .get(`${API_URL}verificar/?tipo_documento=${encodeURIComponent(normalizedTipoDocumento)}&no_documento=${encodeURIComponent(normalizedDocumento)}`, {
         headers: { Authorization: `Token ${token}` },
       })
       .then((res) => {
@@ -198,11 +230,10 @@ export default function PasoPersonas({ onNext }) {
   const crearCiudad = () => {
     const ciudadPayload = {
       ...newCiudad,
-      TCDescripcion: newCiudad.TCDescripcion.trim() || newCiudad.TCNombre.trim(),
     };
 
-    if (!ciudadPayload.TCDescripcion) {
-      showModal("Faltan datos", "Debes ingresar al menos el Nombre o la Descripcion de la ciudad", "error");
+    if (!ciudadPayload.TCNombre?.trim()) {
+      showModal("Faltan datos", "Debes ingresar el nombre de la ciudad", "error");
       return;
     }
 
@@ -250,6 +281,12 @@ export default function PasoPersonas({ onNext }) {
   };
 
   const removePersona = (documento) => {
+    const role = localStorage.getItem("role");
+    const userDoc = localStorage.getItem("user");
+    if (role === "ARRENDADOR" && documento === userDoc) {
+      showModal("Atención", "No puedes eliminar tu propio registro de Arrendador en los contratos que creas.", "error");
+      return;
+    }
     setSelectedPersonas((prev) => prev.filter((persona) => persona.TPNoDocumento !== documento));
   };
 
@@ -258,25 +295,27 @@ export default function PasoPersonas({ onNext }) {
       <section className="app-surface">
         <div className="app-section-title">
           <h2>Paso 1. Personas del contrato</h2>
-          <p>Busca una persona existente o crea una nueva dentro del mismo formato unificado.</p>
+          <p>Busca una persona existente o crea una nueva para formar parte del contrato.</p>
         </div>
 
         <div className="wizard-form-grid">
-          <select name="TPTipoDocumento" value={form.TPTipoDocumento} onChange={handleChange}>
+          <select name="TPTipoDocumento" value={form.TPTipoDocumento} onChange={handleChange} required>
             <option value="">-- Seleccionar Tipo Documento --</option>
-            <option value="CC">CC: Cedula de Ciudadania</option>
-            <option value="CE">CE: Cedula de Extranjeria</option>
+            <option value="CC">CC: CEDULA DE CIUDADANIA</option>
+            <option value="CE">CE: CEDULA DE EXTRANJERIA</option>
             <option value="NT">NT: NIT</option>
-            <option value="PA">PA: Pasaporte</option>
-            <option value="PR">PR: Permiso Temporal de Residencia</option>
+            <option value="PA">PA: PASAPORTE</option>
+            <option value="PR">PR: PERMISO TEMPORAL DE RESIDENCIA</option>
           </select>
           <input
+            type="text"
             autoComplete="off"
             name="TPNoDocumento"
             placeholder="No Documento"
             value={form.TPNoDocumento}
-            onChange={handleChange}
+            onInput={handleChange}
             maxLength="50"
+            required
           />
           <button className="app-button app-button--primary" type="button" onClick={buscarPersona}>
             {searchingPersona ? "Buscando..." : "Buscar"}
@@ -369,7 +408,6 @@ export default function PasoPersonas({ onNext }) {
                   <input autoComplete="off" type="text" placeholder="Nombre" value={newCiudad.TCNombre} onChange={(e) => setNewCiudad({ ...newCiudad, TCNombre: e.target.value })} />
                   <input autoComplete="off" type="text" placeholder="Departamento" value={newCiudad.TCDepartamento} onChange={(e) => setNewCiudad({ ...newCiudad, TCDepartamento: e.target.value })} />
                   <input autoComplete="off" type="text" placeholder="Pais" value={newCiudad.TCPais} onChange={(e) => setNewCiudad({ ...newCiudad, TCPais: e.target.value })} />
-                  <input autoComplete="off" type="text" placeholder="Descripcion" value={newCiudad.TCDescripcion} onChange={(e) => setNewCiudad({ ...newCiudad, TCDescripcion: e.target.value })} />
                   <button className="app-button app-button--primary" type="button" onClick={crearCiudad}>
                     Guardar ciudad
                   </button>
@@ -408,9 +446,13 @@ export default function PasoPersonas({ onNext }) {
                   <strong>{persona.TPNombres} {persona.TPApellidos}</strong>
                   <small>{persona.TPTipoDocumento} - {persona.TPNoDocumento}</small>
                 </div>
-                <button className="app-button app-button--danger" type="button" onClick={() => removePersona(persona.TPNoDocumento)}>
-                  Quitar
-                </button>
+                {localStorage.getItem("role") === "ARRENDADOR" && persona.TPNoDocumento === localStorage.getItem("user") ? (
+                  <span className="app-badge app-badge--info">Tú (Propietario)</span>
+                ) : (
+                  <button className="app-button app-button--danger" type="button" onClick={() => removePersona(persona.TPNoDocumento)}>
+                    Quitar
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -434,12 +476,12 @@ export default function PasoPersonas({ onNext }) {
         </div>
       </section>
 
-      <AppModal 
-        isOpen={modal.isOpen} 
-        title={modal.title} 
-        message={modal.message} 
-        type={modal.type} 
-        onClose={() => setModal({ ...modal, isOpen: false })} 
+      <AppModal
+        isOpen={modal.isOpen}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        onClose={() => setModal({ ...modal, isOpen: false })}
       />
     </div>
   );

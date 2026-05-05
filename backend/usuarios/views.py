@@ -10,6 +10,7 @@ import random
 from .models import UserProfile
 from .permissions import get_user_profile, IsAdministrador
 from .serializers import AdminUserSerializer
+from personas.models import Persona
 
 
 # ======================================
@@ -35,9 +36,16 @@ def login(request):
     role = profile.role if profile else "ADMIN"
     role_label = profile.get_role_display() if profile else "Administrador"
 
+    try:
+        persona = Persona.objects.get(TPNoDocumento=user.username)
+        full_name = f"{persona.TPNombres} {persona.TPApellidos}".strip()
+    except Persona.DoesNotExist:
+        full_name = f"{user.first_name} {user.last_name}".strip() or user.username
+
     return Response({
         "token": token.key,
         "user": user.username,
+        "name": full_name,
         "role": role,
         "role_label": role_label,
     })
@@ -86,6 +94,7 @@ def register(request):
         role=role,
         celular=celular
     )
+
 
     token, created = Token.objects.get_or_create(user=user)
 

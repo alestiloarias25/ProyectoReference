@@ -183,7 +183,6 @@ export default function Register() {
               onChange={handleChange}
               className="app-select"
             >
-              <option value="ADMINISTRADOR">Usuario Administrador</option>
               <option value="ARRENDADOR">Usuario Arrendador</option>
               <option value="ARRENDATARIO">Usuario Arrendatario</option>
             </select>

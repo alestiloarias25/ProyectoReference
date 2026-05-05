@@ -28,7 +28,6 @@ const initialCiudadForm = {
   TCNombre: "",
   TCDepartamento: "",
   TCPais: "",
-  TCDescripcion: "",
 };
 
 const buildAuthConfig = (token) => ({
@@ -174,7 +173,6 @@ export default function AdminPanel() {
     try {
       const payload = {
         ...ciudadForm,
-        TCDescripcion: ciudadForm.TCDescripcion.trim() || ciudadForm.TCNombre.trim(),
       };
 
       const url = editingCiudadId ? `${API_BASE}/api/ciudades/${editingCiudadId}/` : `${API_BASE}/api/ciudades/`;
@@ -214,7 +212,7 @@ export default function AdminPanel() {
   };
 
   const deleteCiudad = async (ciudad) => {
-    if (!window.confirm(`Deseas eliminar la ciudad ${ciudad.TCNombre || ciudad.TCDescripcion || ciudad.TCId}?`)) return;
+    if (!window.confirm(`Deseas eliminar la ciudad ${ciudad.TCNombre || ciudad.TCId}?`)) return;
     try {
       await axios.delete(`${API_BASE}/api/ciudades/${ciudad.TCId}/`, authConfig);
       await loadAll();
@@ -380,7 +378,6 @@ export default function AdminPanel() {
               <input autoComplete="off" type="text" placeholder="Nombre" value={ciudadForm.TCNombre} onChange={(e) => setCiudadForm({ ...ciudadForm, TCNombre: e.target.value })} />
               <input autoComplete="off" type="text" placeholder="Departamento" value={ciudadForm.TCDepartamento} onChange={(e) => setCiudadForm({ ...ciudadForm, TCDepartamento: e.target.value })} />
               <input autoComplete="off" type="text" placeholder="Pais" value={ciudadForm.TCPais} onChange={(e) => setCiudadForm({ ...ciudadForm, TCPais: e.target.value })} />
-              <input autoComplete="off" type="text" placeholder="Descripcion" value={ciudadForm.TCDescripcion} onChange={(e) => setCiudadForm({ ...ciudadForm, TCDescripcion: e.target.value })} />
               <div className="app-actions">
                 <button className="app-button app-button--secondary" type="button" onClick={resetCiudadForm}>Limpiar</button>
                 <button className="app-button app-button--primary" type="submit">{editingCiudadId ? "Guardar ciudad" : "Agregar ciudad"}</button>
@@ -400,7 +397,7 @@ export default function AdminPanel() {
                 <tbody>
                   {ciudades.map((ciudad) => (
                     <tr key={ciudad.TCId}>
-                      <td>{ciudad.TCNombre || ciudad.TCDescripcion || "-"}</td>
+                      <td>{ciudad.TCNombre || "-"}</td>
                       <td>{ciudad.TCDepartamento || "-"}</td>
                       <td>{ciudad.TCPais || "-"}</td>
                       <td>
@@ -411,7 +408,6 @@ export default function AdminPanel() {
                               TCNombre: ciudad.TCNombre || "",
                               TCDepartamento: ciudad.TCDepartamento || "",
                               TCPais: ciudad.TCPais || "",
-                              TCDescripcion: ciudad.TCDescripcion || "",
                             });
                           }}>Editar</button>
                           <button className="app-table-button app-table-button--danger" type="button" onClick={() => deleteCiudad(ciudad)}>Eliminar</button>

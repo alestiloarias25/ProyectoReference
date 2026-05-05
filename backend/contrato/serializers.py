@@ -36,10 +36,11 @@ class ContratoArriendoSerializer(serializers.ModelSerializer):
             'TCATipoDuracion',
             'TCAValorCanonContrato',
             'TCAArchivoPDF',
+            'TBNoMatricula',
             'TBDireccion',
             'personas'
         ]
-        read_only_fields = ['username', 'TBDireccion']
+        read_only_fields = ['username', 'TBDireccion', 'TBNoMatricula']
 
     def _parse_personas_from_initial_data(self):
         raw_personas = self.initial_data.get("personas")
@@ -72,8 +73,20 @@ class ContratoArriendoSerializer(serializers.ModelSerializer):
             if not Persona.objects.filter(TPTipoDocumento=tipo_doc, TPNoDocumento=no_doc).exists():
                 raise serializers.ValidationError(f"La persona con documento {tipo_doc} {no_doc} no está registrada.")
 
+        roles = [p.get('TCARTipoParticipacion') for p in data["personas"]]
+        if 'ARRENDADOR' not in roles:
+            raise serializers.ValidationError("Debe existir como mínimo una persona con el rol de Arrendador.")
+        if 'ARRENDATARIO' not in roles:
+            raise serializers.ValidationError("Debe existir como mínimo una persona con el rol de Arrendatario.")
+
+        import datetime
+        fecha_registro = datetime.date.today()
+        
+        if fecha_registro < data['TCAFechaInicioContrato']:
+            raise serializers.ValidationError("La fecha de registro del contrato (hoy) debe ser posterior o igual a la fecha de Inicio.")
+
         if data['TCAFechaInicioContrato'] < data['TCAFechaContrato']:
-            raise serializers.ValidationError("La fecha de inicio no puede ser anterior a la fecha del contrato.")
+            raise serializers.ValidationError("La fecha de Inicio debe ser posterior o igual a la fecha del contrato.")
 
         bien_id = data.get('bien_inmueble_id')
         if bien_id:
@@ -118,6 +131,11 @@ class ContratoArriendoSerializer(serializers.ModelSerializer):
             # Obtener el bien inmueble
             bien = TbienesInmuebles.objects.get(id=bien_id)
             if request and get_user_role(request.user) != ROLE_ADMINISTRADOR and bien.username != username:
+                from referencias.models import TAlertas
+                TAlertas.objects.create(
+                    TUUserName=username,
+                    TAObservacion=f"Intento de usar la matrícula {bien.TBNoMatricula} que pertenece al usuario {bien.username}."
+                )
                 raise serializers.ValidationError({
                     "bien_inmueble_id": "No tienes permiso para usar este bien inmueble."
                 })

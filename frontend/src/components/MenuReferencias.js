@@ -1,12 +1,25 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AppShell from "./AppShell";
+import AppModal from "./AppModal";
 import "./MenuReferencias.css";
 
 export default function MenuReferencias() {
   const navigate = useNavigate();
   const role = localStorage.getItem("role");
   const roleLabel = localStorage.getItem("role_label") || role;
+  
+  const [modalAviso, setModalAviso] = useState(false);
+
+  useEffect(() => {
+    if (role === "ARRENDADOR") {
+      const visto = localStorage.getItem("aviso_habeas_data");
+      if (!visto) {
+        setModalAviso(true);
+        localStorage.setItem("aviso_habeas_data", "true");
+      }
+    }
+  }, [role]);
 
   const isAdministrador = role === "ADMINISTRADOR";
   const canManageContracts = role === "ADMINISTRADOR" || role === "ARRENDADOR";
@@ -25,6 +38,16 @@ export default function MenuReferencias() {
           <button className="app-button app-button--primary" type="button" onClick={() => navigate("/consultar-puntaje")}>
             Ingresar al sistema
           </button>
+          {role === "ARRENDADOR" && (
+            <a 
+              href="/docs/modelo_contrato_generico.pdf" 
+              download 
+              className="app-button app-button--secondary" 
+              style={{ marginLeft: "10px", backgroundColor: "#fff", color: "#10243a", border: "1px solid #c9d3dd" }}
+            >
+              Descargar Modelo de Contrato
+            </a>
+          )}
         </>
       }
     >
@@ -109,6 +132,14 @@ export default function MenuReferencias() {
           <strong>Mas del 80%</strong> de los registros permiten tomar mejores decisiones operativas y administrativas.
         </p>
       </section>
+
+      <AppModal 
+        isOpen={modalAviso} 
+        title="Alerta sobre Habeas Data" 
+        message="Le recordamos que, en cumplimiento de la Ley de Habeas Data, todo tratamiento de datos personales requiere autorización previa y expresa del titular. Asegúrese de incluir las cláusulas pertinentes en sus contratos." 
+        type="info" 
+        onClose={() => setModalAviso(false)} 
+      />
     </AppShell>
   );
 }

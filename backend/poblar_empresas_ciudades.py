@@ -52,27 +52,27 @@ def poblar_ciudades():
     """Crea ciudades de ejemplo"""
     ciudades = [
         {
-            'TCDescripcion': 'Bogotá',
+            'TCNombre': 'Bogotá',
             'TCDepartamento': 'Cundinamarca'
         },
         {
-            'TCDescripcion': 'Medellín',
+            'TCNombre': 'Medellín',
             'TCDepartamento': 'Antioquia'
         },
         {
-            'TCDescripcion': 'Cali',
+            'TCNombre': 'Cali',
             'TCDepartamento': 'Valle del Cauca'
         },
         {
-            'TCDescripcion': 'Barranquilla',
+            'TCNombre': 'Barranquilla',
             'TCDepartamento': 'Atlántico'
         },
         {
-            'TCDescripcion': 'Cartagena',
+            'TCNombre': 'Cartagena',
             'TCDepartamento': 'Bolívar'
         },
         {
-            'TCDescripcion': 'Bucaramanga',
+            'TCNombre': 'Bucaramanga',
             'TCDepartamento': 'Santander'
         },
     ]
@@ -80,17 +80,17 @@ def poblar_ciudades():
     for ciudad in ciudades:
         try:
             obj, created = TCiudades.objects.get_or_create(
-                TCDescripcion=ciudad['TCDescripcion'],
+                TCNombre=ciudad['TCNombre'],
                 defaults={
                     'TCDepartamento': ciudad['TCDepartamento'],
                 }
             )
             if created:
-                print(f"✅ Ciudad creada: {ciudad['TCDescripcion']}")
+                print(f"✅ Ciudad creada: {ciudad['TCNombre']}")
             else:
-                print(f"ℹ️ Ciudad ya existe: {ciudad['TCDescripcion']}")
+                print(f"ℹ️ Ciudad ya existe: {ciudad['TCNombre']}")
         except Exception as e:
-            print(f"❌ Error creando ciudad {ciudad['TCDescripcion']}: {e}")
+            print(f"❌ Error creando ciudad {ciudad['TCNombre']}: {e}")
 
 
 if __name__ == '__main__':

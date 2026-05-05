@@ -23,9 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-*aadsh+yhc8d&wpv!+o*vl6j$(v+%u&b0t%(t72vnn_f&2llw!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['www.referenciate.com', 'referenciate-backend-production.up.railway.app', 'localhost', '127.0.0.1']
+
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',

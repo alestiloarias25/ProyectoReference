@@ -7,6 +7,12 @@ class TbienesInmuebles(models.Model):
     TBTipo = models.CharField(max_length=20)
     TBObs = models.CharField(max_length=255, blank=True, null=True)
     username = models.CharField(max_length=150)
+    
+    # Nuevos campos
+    numero_contrato_energia = models.CharField(max_length=50, blank=True, null=True)
+    numero_contrato_agua = models.CharField(max_length=50, blank=True, null=True)
+    numero_contrato_gas = models.CharField(max_length=50, blank=True, null=True)
+    certificado_tradicion = models.FileField(upload_to='certificados/', null=True, blank=True)
 
     class Meta:
         db_table = "tbienesinmuebles"

@@ -35,7 +35,7 @@ else:
 # Preparar datos base para Contrato
 try:
     empresa, _ = TEmpresas.objects.get_or_create(TEDescripcion="Empresa Test", defaults={'TEActivo': True})
-    ciudad, _ = TCiudades.objects.get_or_create(TCDescripcion="Ciudad Test", defaults={'TCActivo': True})
+    ciudad, _ = TCiudades.objects.get_or_create(TCNombre="Ciudad Test")
     
     persona, _ = Persona.objects.get_or_create(
         TPNoDocumento=user_doc, 

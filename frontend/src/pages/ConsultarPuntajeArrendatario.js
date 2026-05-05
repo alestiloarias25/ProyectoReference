@@ -14,6 +14,8 @@ const SCORE_SCALE = [
 const ConsultarPuntajeArrendatario = () => {
   const [documento, setDocumento] = useState("");
   const [resultado, setResultado] = useState(null);
+  const [detallesCalculo, setDetallesCalculo] = useState(null);
+  const [historialData, setHistorialData] = useState({ historial_contratos: [], historial_reportes: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -23,7 +25,8 @@ const ConsultarPuntajeArrendatario = () => {
   const isArrendatario = userRole === "ARRENDATARIO";
 
   const buscarPuntaje = useCallback(async (docToSearch) => {
-    if (!docToSearch.trim()) {
+    const documentoBuscado = String(docToSearch || "").replace(/[\s-]+/g, "").trim();
+    if (!documentoBuscado) {
       setError("Por favor ingresa un numero de documento");
       return;
     }
@@ -31,20 +34,56 @@ const ConsultarPuntajeArrendatario = () => {
     setLoading(true);
     setError(null);
     setResultado(null);
+    setDetallesCalculo(null);
 
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8000/referencias/api/consultar-puntaje/por_documento/?tp_no_documento=${docToSearch}`,
+        `http://127.0.0.1:8000/referencias/api/consultar-puntaje/por_documento/?tp_no_documento=${documentoBuscado}`,
         {
           headers: { Authorization: `Token ${token}` },
         }
       );
       setResultado(response.data);
+
+      try {
+        const detallesResponse = await axios.get(
+          `http://127.0.0.1:8000/referencias/api/historial/detalles_calculo/?tp_no_documento=${documentoBuscado}`,
+          {
+            headers: { Authorization: `Token ${token}` },
+          }
+        );
+        setDetallesCalculo(detallesResponse.data);
+      } catch (errDetalle) {
+        console.warn("No se pudo cargar detalles de calculo (posible falta de permisos).");
+        setDetallesCalculo(null);
+      }
+
+      try {
+        const historialResponse = await axios.get(
+          `http://127.0.0.1:8000/referencias/api/consultar-puntaje/historial/?tp_no_documento=${documentoBuscado}`,
+          {
+            headers: { Authorization: `Token ${token}` },
+          }
+        );
+        setHistorialData(historialResponse.data);
+      } catch (errHistorial) {
+        console.warn("No se pudo cargar el historial.", errHistorial);
+        setHistorialData({ historial_contratos: [], historial_reportes: [] });
+      }
     } catch (err) {
+      setHistorialData({ historial_contratos: [], historial_reportes: [] });
       if (err.response?.status === 404) {
         setError("No se encontro persona con ese documento");
+      } else if (err.response?.status === 403) {
+        setError(null);
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error);
       } else {
-        setError(err.response?.data?.error || "Error al consultar el puntaje");
+        if (err.message && err.message.includes("403")) {
+          setError(null);
+        } else {
+          setError(err.message || "Error al consultar el historial");
+        }
       }
     } finally {
       setLoading(false);
@@ -153,7 +192,7 @@ const ConsultarPuntajeArrendatario = () => {
     <AppShell
       eyebrow={isArrendatario ? "Tu evaluacion" : "Consulta estandarizada"}
       title={isArrendatario ? "Mi puntaje de arrendatario" : "Consultar puntaje del arrendatario"}
-      subtitle={isArrendatario ? "Consulta tu propio nivel de riesgo y calificacion en el sistema." : "Consulta el nivel de riesgo dentro del mismo formato y colores del menu principal."}
+      subtitle={isArrendatario ? "Consulta tu propio nivel de riesgo y calificacion en el sistema." : "Consulta el nivel de riesgo para Arrendatarios."}
     >
       {!isArrendatario && (
         <section className="app-surface">
@@ -163,6 +202,7 @@ const ConsultarPuntajeArrendatario = () => {
               <input
                 type="text"
                 id="documento"
+                data-no-uppercase
                 value={documento}
                 onChange={(e) => setDocumento(e.target.value)}
                 placeholder="Ej: 1234567890"
@@ -175,18 +215,19 @@ const ConsultarPuntajeArrendatario = () => {
             </button>
           </form>
 
-          {error && <div className="app-message app-message--error">{error}</div>}
         </section>
       )}
 
-      {isArrendatario && error && (
-        <section className="app-surface">
-          <div className="app-message app-message--error">{error}</div>
-        </section>
-      )}
+
 
       {loading && isArrendatario && (
         <div className="app-message app-message--info">Consultando tu evaluacion...</div>
+      )}
+
+      {error && (
+        <div className="app-message app-message--error" style={{ marginBottom: '16px' }}>
+          {error}
+        </div>
       )}
 
       {resultado ? (
@@ -302,11 +343,86 @@ const ConsultarPuntajeArrendatario = () => {
               <h3>Evaluacion detallada</h3>
               <div className="cp-info-list">
                 <div><strong>Rango:</strong> {resultado.tp_valor_initial} - {resultado.tp_valor_final}</div>
-                
+
                 {resultado.tp_comentario && <div><strong>Comentario:</strong> {resultado.tp_comentario}</div>}
               </div>
             </div>
           </div>
+
+          {detallesCalculo && (
+            <div className="cp-panel" style={{ marginTop: '20px' }}>
+              <h3>Detalles del Calculo de Score</h3>
+              <div className="cp-info-list">
+                <div><strong>Reportes Evaluados (Activos):</strong> {detallesCalculo.cantidad_reportes_aplicables}</div>
+                <div><strong>Reportes CF (Contrato Finalizado):</strong> {detallesCalculo.cantidad_reportes_cf}</div>
+                <div><strong>Reportes Recientes (Periodo de gracia &lt; 20 dias):</strong> {detallesCalculo.cantidad_reportes_gracia}</div>
+                <hr style={{ margin: '10px 0', borderTop: '1px solid #e1e8ed' }} />
+                <h4>Desglose de Penalizaciones Base (antes de aplicar CF):</h4>
+                <div><strong>Por Cantidad de Reportes (25%):</strong> -{detallesCalculo.cantidad_ponderado * 10} puntos</div>
+                <div><strong>Por Tipo de Reporte (30%):</strong> -{detallesCalculo.tipo_ponderado * 10} puntos</div>
+                <div><strong>Por Valor Adeudado (30%):</strong> -{detallesCalculo.valor_ponderado * 10} puntos (Total deuda base: ${detallesCalculo.valor_total_adeudado})</div>
+                <div><strong>Por Recencia de Reportes (15%):</strong> -{detallesCalculo.recencia_ponderado * 10} puntos</div>
+                <hr style={{ margin: '10px 0', borderTop: '1px solid #e1e8ed' }} />
+                <div><strong>Penalizacion Base Total:</strong> -{detallesCalculo.penalizacion_base * 10} puntos</div>
+                <div><strong>Ajuste Reportes Positivos (CF):</strong> +{(detallesCalculo.ajuste_cf * -1) * 10} puntos</div>
+                <hr style={{ margin: '10px 0', borderTop: '1px solid #e1e8ed' }} />
+                <div><strong>Penalizacion Neta Aplicada:</strong> -{detallesCalculo.penalizacion_total * 10} puntos</div>
+                <div><strong>Score Final (1000 - Penalizacion Neta):</strong> {detallesCalculo.puntaje_final}</div>
+              </div>
+            </div>
+          )}
+
+          {historialData && (
+            <div className="cp-panel cp-historial-box">
+              <h3>Historial de Contratos e Historial de Reportes</h3>
+              <div className="cp-historial-dropdowns">
+                <details className="cp-historial-dropdown" open>
+                  <summary>Historial de Contratos ({historialData.historial_contratos.length})</summary>
+                  {historialData.historial_contratos.length ? (
+                    <div className="cp-historial-table">
+                      {historialData.historial_contratos.map((contrato) => (
+                        <div key={contrato.contrato_id} className="cp-historial-entry">
+                          <div><strong>Contrato:</strong> {contrato.contrato_id}</div>
+                          <div><strong>Matrícula:</strong> {contrato.TBNoMatricula}</div>
+                          <div><strong>Dirección:</strong> {contrato.TBDireccion}</div>
+                          <div><strong>Fecha contrato:</strong> {contrato.TCAFechaContrato}</div>
+                          <div><strong>Fecha inicio:</strong> {contrato.TCAFechaInicioContrato}</div>
+                          <div><strong>Fecha entrega inmueble:</strong> {contrato.TCAFechaEntregaInmueble || 'N/A'}</div>
+                          <div><strong>Duración:</strong> {contrato.TCADuracionContrato} {contrato.TCATipoDuracion}</div>
+                          <div><strong>Canon:</strong> ${contrato.TCAValorCanonContrato}</div>
+                          <div><strong>Participación:</strong> {contrato.participacion}</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="cp-empty-state">No hay contratos encontrados para este documento.</div>
+                  )}
+                </details>
+
+                <details className="cp-historial-dropdown" open>
+                  <summary>Historial de Reportes ({historialData.historial_reportes.length})</summary>
+                  {historialData.historial_reportes.length ? (
+                    <div className="cp-historial-table">
+                      {historialData.historial_reportes.map((reporte) => (
+                        <div key={reporte.id} className="cp-historial-entry">
+                          <div><strong>ID reporte:</strong> {reporte.id}</div>
+                          <div><strong>Contrato:</strong> {reporte.contrato_id}</div>
+                          <div><strong>Tipo:</strong> {reporte.tipo_reporte}</div>
+                          <div><strong>Valor adeudado:</strong> {reporte.valor_adeudado || 'N/A'}</div>
+                          <div><strong>Estado:</strong> {reporte.estado}</div>
+                          <div><strong>Fecha reporte:</strong> {reporte.fecha_reporte}</div>
+                          <div><strong>Entrega inmueble:</strong> {reporte.fecha_entrega_inmueble || 'N/A'}</div>
+                          {reporte.observacion && <div><strong>Observación:</strong> {reporte.observacion}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="cp-empty-state">No hay reportes asociados a este arrendatario.</div>
+                  )}
+                </details>
+              </div>
+            </div>
+          )}
 
           {!isArrendatario && (
             <div className="app-actions">

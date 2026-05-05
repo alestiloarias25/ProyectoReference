@@ -21,7 +21,9 @@ export default function ContratoWizard() {
     <AppShell
       eyebrow="Formulario estandarizado"
       title="Registro de contrato"
-      subtitle="Los tres pasos del contrato comparten el mismo menu, colores, superficies y botones del sistema."
+      subtitle="Primer paso: Elige o crea las personas que harán parte del contrato, minimo un arrendador (Tú) y un Arrendatario.
+                Segundo paso: Elige o crea el Bien Inmueble objeto del contrato.
+                Tercer paso: Ingresa la informacion propia del contrato."
     >
       <div className="wizard-shell">
         <div className="wizard-steps">

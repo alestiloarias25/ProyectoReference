@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./app-shell.css";
 
@@ -33,11 +33,35 @@ export default function AppShell({
   const location = useLocation();
   const role = localStorage.getItem("role");
   const roleLabel = localStorage.getItem("role_label") || role;
+  const userName = localStorage.getItem("full_name") || localStorage.getItem("user");
   const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const handleInput = (event) => {
+      const { target } = event;
+      if (!target || !target.tagName) return;
+      if (target.hasAttribute('data-no-uppercase')) return;
+
+      const tagName = target.tagName.toUpperCase();
+      const type = target.type ? target.type.toLowerCase() : "";
+
+      if (tagName === "INPUT" && (type === "text" || type === "search")) {
+        target.value = target.value.toUpperCase();
+      }
+
+      if (tagName === "TEXTAREA") {
+        target.value = target.value.toUpperCase();
+      }
+    };
+
+    document.addEventListener("input", handleInput, true);
+    return () => document.removeEventListener("input", handleInput, true);
+  }, []);
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("full_name");
     localStorage.removeItem("role");
     localStorage.removeItem("role_label");
     navigate("/login");
@@ -58,6 +82,7 @@ export default function AppShell({
           </button>
 
           <div className="app-topbar-tools">
+            {token && userName && <span className="app-user-label">{userName}</span>}
             {token && roleLabel && <span className="app-role-chip">{roleLabel}</span>}
 
             {navItems.length > 0 && (

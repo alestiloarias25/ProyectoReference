@@ -1,0 +1,16 @@
+name: Antigravity CI
+on:
+  push:
+    branches: [ main ]  # Se activa al subir cambios a main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Dependencies
+        run: npm install  # O el comando que use tu versión de Antigravity
+        
+      - name: Build Project
+        run: npm run build

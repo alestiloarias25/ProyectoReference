@@ -19,9 +19,9 @@ empresas_data = [
 ]
 
 ciudades_data = [
-    {'TCDescripcion': 'Bogotá', 'TCDepartamento': 'Cundinamarca'},
-    {'TCDescripcion': 'Medellín', 'TCDepartamento': 'Antioquia'},
-    {'TCDescripcion': 'Cali', 'TCDepartamento': 'Valle del Cauca'},
+    {'TCNombre': 'Bogotá', 'TCDepartamento': 'Cundinamarca'},
+    {'TCNombre': 'Medellín', 'TCDepartamento': 'Antioquia'},
+    {'TCNombre': 'Cali', 'TCDepartamento': 'Valle del Cauca'},
 ]
 
 print("Creando empresas...")
@@ -36,7 +36,7 @@ print("\nCreando ciudades...")
 for ciu in ciudades_data:
     try:
         TCiudades.objects.get_or_create(**ciu)
-        print(f"✅ {ciu['TCDescripcion']}")
+        print(f"✅ {ciu['TCNombre']}")
     except Exception as e:
         print(f"❌ Error: {e}")
 

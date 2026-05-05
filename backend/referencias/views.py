@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import THistorial
 from tablas_maestras.models import TTipoReporte, TPuntajeColor
-from .serializers import TTipoReporteSerializer, THistorialSerializer, TPuntajeColorSerializer
+from .serializers import TTipoReporteSerializer, THistorialSerializer, TPuntajeColorSerializer, ThistorialPagosSerializer
 from .services import RecalculoPuntajeService, DetalleRecalculoService
 from contrato.models import ContratoArriendoRelacion
 from usuarios.permissions import IsAdministrador, IsAdministradorOrArrendador, IsAdministradorOrArrendadorReadOnly, CanEvaluateArrendatario, get_user_role
@@ -26,6 +26,32 @@ class TPuntajeColorViewSet(ModelViewSet):
     queryset = TPuntajeColor.objects.all()
     serializer_class = TPuntajeColorSerializer
     permission_classes = [IsAdministrador]
+
+class ThistorialPagosViewSet(ModelViewSet):
+    from .models import ThistorialPagos
+    queryset = ThistorialPagos.objects.all()
+    serializer_class = ThistorialPagosSerializer
+    permission_classes = [IsAdministradorOrArrendador]
+
+    def get_queryset(self):
+        from .models import ThistorialPagos
+        queryset = ThistorialPagos.objects.all()
+        if get_user_role(self.request.user) != "ADMINISTRADOR":
+            queryset = queryset.filter(TUUserName=self.request.user.username)
+        return queryset
+
+    def perform_create(self, serializer):
+        pago = serializer.save(TUUserName=self.request.user.username)
+        THistorialViewSet._recalcular_puntajes_arrendatarios(pago.TCAIDContrato_id)
+
+    def perform_update(self, serializer):
+        pago = serializer.save()
+        THistorialViewSet._recalcular_puntajes_arrendatarios(pago.TCAIDContrato_id)
+
+    def perform_destroy(self, instance):
+        contrato_id = instance.TCAIDContrato_id
+        instance.delete()
+        THistorialViewSet._recalcular_puntajes_arrendatarios(contrato_id)
 
 
 class THistorialViewSet(ModelViewSet):
@@ -60,15 +86,34 @@ class THistorialViewSet(ModelViewSet):
         if not isinstance(instances, list):
             instances = [instances]
             
-        # Dispara el recálculo de puntaje automáticamente
         contratos_ids = set([inst.TCAIDContrato_id for inst in instances])
+        
+        for inst in instances:
+            # Enviar SMS/Email simulado
+            print(f"--- NOTIFICACIÓN SMS/EMAIL ---")
+            print(f"Para: Arrendatario del contrato {inst.TCAIDContrato_id}")
+            print(f"Mensaje: Tiene un reporte por valor adeudado de {inst.TRHValorAdeudado}. Este reporte ha afectado su puntaje de forma inmediata.")
+            print(f"------------------------------")
+
+        # Dispara el recálculo de puntaje automáticamente
         for cid in contratos_ids:
             self._recalcular_puntajes_arrendatarios(cid)
 
     def perform_update(self, serializer):
         """Al actualizar un reporte, recalcula los puntajes"""
+        if get_user_role(self.request.user) == "ARRENDADOR":
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Los usuarios Arrendadores no pueden editar reportes.")
         historial = serializer.save()
         self._recalcular_puntajes_arrendatarios(historial.TCAIDContrato_id)
+
+    def perform_destroy(self, instance):
+        if get_user_role(self.request.user) == "ARRENDADOR":
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Los usuarios Arrendadores no pueden eliminar reportes.")
+        contrato_id = instance.TCAIDContrato_id
+        instance.delete()
+        self._recalcular_puntajes_arrendatarios(contrato_id)
 
     @staticmethod
     def _recalcular_puntajes_arrendatarios(tca_id_contrato):
@@ -228,6 +273,69 @@ class ConsultarPuntajeArrendatarioViewSet(ModelViewSet):
             'tp_evaluacion': rango_color.TPCEvaluacion,
             'tp_comentario': rango_color.TPCComentario
         }, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], permission_classes=[CanEvaluateArrendatario])
+    def historial(self, request):
+        """
+        Endpoint para obtener el historial de contratos y reportes del arrendatario.
+        GET /api/consultar-puntaje/historial/?tp_no_documento=1234567890
+        """
+        tp_no_documento = request.query_params.get('tp_no_documento')
+        if not tp_no_documento:
+            return Response(
+                {'error': 'tp_no_documento es requerido como parámetro de consulta'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        contrato_relaciones = ContratoArriendoRelacion.objects.filter(
+            TPNoDocumento=tp_no_documento
+        ).select_related('TCAIDContrato')
+
+        contratos_by_id = {}
+        for relacion in contrato_relaciones:
+            contrato = relacion.TCAIDContrato
+            if contrato.TCAIDContrato not in contratos_by_id:
+                contratos_by_id[contrato.TCAIDContrato] = {
+                    'contrato_id': contrato.TCAIDContrato,
+                    'TBNoMatricula': contrato.TBNoMatricula,
+                    'TBDireccion': contrato.TBDireccion,
+                    'TCAFechaContrato': contrato.TCAFechaContrato,
+                    'TCAFechaInicioContrato': contrato.TCAFechaInicioContrato,
+                    'TCAFechaEntregaInmueble': contrato.TCAFechaEntregaInmueble,
+                    'TCADuracionContrato': contrato.TCADuracionContrato,
+                    'TCATipoDuracion': contrato.TCATipoDuracion,
+                    'TCAValorCanonContrato': str(contrato.TCAValorCanonContrato),
+                    'participacion': relacion.TCARTipoParticipacion,
+                }
+
+        contratos = list(contratos_by_id.values())
+        contrato_ids = [c['contrato_id'] for c in contratos]
+
+        reportes = THistorial.objects.filter(
+            TCAIDContrato_id__in=contrato_ids
+        ).select_related('TRHTipoReporte', 'TCAIDContrato').order_by('-TRHFechaReporte')
+
+        historial_reportes = [
+            {
+                'id': reporte.TRHId,
+                'contrato_id': reporte.TCAIDContrato_id,
+                'tipo_reporte': reporte.TRHTipoReporte.TRHTipoReporte,
+                'valor_adeudado': str(reporte.TRHValorAdeudado) if reporte.TRHValorAdeudado is not None else None,
+                'estado': reporte.TRHEstado,
+                'observacion': reporte.TRHObservacion,
+                'fecha_reporte': reporte.TRHFechaReporte,
+                'fecha_entrega_inmueble': getattr(reporte.TCAIDContrato, 'TCAFechaEntregaInmueble', None),
+            }
+            for reporte in reportes
+        ]
+
+        return Response(
+            {
+                'historial_contratos': contratos,
+                'historial_reportes': historial_reportes,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 @login_required

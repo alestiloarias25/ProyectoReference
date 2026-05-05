@@ -11,6 +11,8 @@ class FotoInmuebleSerializer(serializers.ModelSerializer):
 class TbienesInmueblesSerializer(serializers.ModelSerializer):
     fotos = FotoInmuebleSerializer(many=True, read_only=True)
     telefono_contacto = serializers.SerializerMethodField()
+    estado_arrendado = serializers.SerializerMethodField()
+    contrato_vigente_info = serializers.SerializerMethodField()
 
     class Meta:
         model = TbienesInmuebles
@@ -23,9 +25,15 @@ class TbienesInmueblesSerializer(serializers.ModelSerializer):
             "TBObs",
             "username",
             "fotos",
-            "telefono_contacto"
+            "telefono_contacto",
+            "numero_contrato_energia",
+            "numero_contrato_agua",
+            "numero_contrato_gas",
+            "certificado_tradicion",
+            "estado_arrendado",
+            "contrato_vigente_info"
         ]       
-        read_only_fields = ["username", "fotos"]
+        read_only_fields = ["username", "fotos", "estado_arrendado", "contrato_vigente_info"]
 
     def validate_TBDireccion(self, value):
         # Format: V NNNLN NNNL NNN CCCCCCC
@@ -34,9 +42,73 @@ class TbienesInmueblesSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Debe usar el formato: Vía Número Letra Número Letra Número Complemento. Ej: C 60 18 15 o K 21B 35 28 Ap 201")
         return value
 
+    def validate_certificado_tradicion(self, value):
+        # Solicitado Obligatorio al crear o modificar, y debe ser PDF
+        if not value:
+            raise serializers.ValidationError("El Certificado de Tradición es obligatorio.")
+            
+        content_type = getattr(value, "content_type", "")
+        filename = getattr(value, "name", "")
+        
+        if content_type and content_type != "application/pdf" and not filename.lower().endswith(".pdf"):
+            raise serializers.ValidationError("El Certificado de Tradición debe ser un PDF.")
+        
+        if not content_type and not filename.lower().endswith(".pdf"):
+            raise serializers.ValidationError("El Certificado de Tradición debe ser un PDF.")
+            
+        return value
+
     def get_telefono_contacto(self, obj):
         try:
             user = User.objects.get(username=obj.username)
             return user.profile.celular
         except:
             return None
+
+    def get_estado_arrendado(self, obj):
+        from contrato.models import ContratoArriendo
+        # Considerado vigente si TCAFechaEntregaInmueble is null
+        return ContratoArriendo.objects.filter(
+            TBNoMatricula=obj.TBNoMatricula,
+            TBDireccion=obj.TBDireccion,
+            TCAFechaEntregaInmueble__isnull=True
+        ).exists()
+
+    def get_contrato_vigente_info(self, obj):
+        from contrato.models import ContratoArriendo, ContratoArriendoRelacion
+        from personas.models import Persona
+        
+        contrato = ContratoArriendo.objects.filter(
+            TBNoMatricula=obj.TBNoMatricula,
+            TBDireccion=obj.TBDireccion,
+            TCAFechaEntregaInmueble__isnull=True
+        ).first()
+        
+        if contrato:
+            relaciones = ContratoArriendoRelacion.objects.filter(
+                TCAIDContrato=contrato,
+                TCARTipoParticipacion__in=['ARRENDATARIO', 'CODEUDOR']
+            )
+            
+            personas_info = []
+            for rel in relaciones:
+                try:
+                    persona = Persona.objects.get(TPNoDocumento=rel.TPNoDocumento)
+                    personas_info.append({
+                        "rol": rel.TCARTipoParticipacion,
+                        "documento": f"{persona.TPTipoDocumento} {rel.TPNoDocumento}",
+                        "nombre": f"{persona.TPNombres} {persona.TPApellidos}",
+                        "contacto": persona.TPCelular1
+                    })
+                except Persona.DoesNotExist:
+                    pass
+
+            return {
+                "id": contrato.TCAIDContrato,
+                "fecha_inicio": contrato.TCAFechaInicioContrato,
+                "valor_canon": contrato.TCAValorCanonContrato,
+                "duracion": contrato.TCADuracionContrato,
+                "tipo_duracion": contrato.TCATipoDuracion,
+                "personas": personas_info
+            }
+        return None

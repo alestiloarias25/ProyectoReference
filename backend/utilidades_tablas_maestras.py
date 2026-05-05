@@ -102,7 +102,6 @@ def migrate_data():
                         'TCNombre': ciudad_old.TCNombre,
                         'TCDepartamento': ciudad_old.TCDepartamento,
                         'TCPais': ciudad_old.TCPais,
-                        'TCDescripcion': ciudad_old.TCDescripcion,
                     }
                 )
                 ciudades_count += 1

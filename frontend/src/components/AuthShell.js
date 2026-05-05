@@ -17,7 +17,7 @@ export default function AuthShell({ eyebrow, title, subtitle, children, footerLi
 
           <span className="app-eyebrow">{eyebrow}</span>
           <h1 className="auth-title">{title}</h1>
-          <p className="auth-subtitle">{subtitle}</p>
+          <p className="auth-subtitle auth-subtitle--login">{subtitle}</p>
 
           <div className="auth-body">{children}</div>
 

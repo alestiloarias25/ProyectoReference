@@ -59,7 +59,7 @@ export default function PasoInmueble({ onSuccess, onBack }) {
 
   const getCiudadLabel = (ciudad) => {
     const parts = [ciudad?.TCNombre?.trim(), ciudad?.TCDepartamento?.trim(), ciudad?.TCPais?.trim()].filter(Boolean);
-    return parts.length > 0 ? parts.join(" - ") : ciudad?.TCDescripcion?.trim() || `Ciudad ${ciudad?.TCId ?? ""}`;
+    return parts.length > 0 ? parts.join(" - ") : `Ciudad ${ciudad?.TCId ?? ""}`;
   };
 
   const resetSearchFlow = () => {
@@ -112,12 +112,25 @@ export default function PasoInmueble({ onSuccess, onBack }) {
   };
 
   const buscarInmueble = () => {
-    const matricula = searchForm.TBNoMatricula.trim().toLowerCase();
-    const direccion = searchForm.TBDireccion.trim().toLowerCase();
+    const rawMatricula = String(searchForm.TBNoMatricula ?? "").trim();
+    const rawDireccion = String(searchForm.TBDireccion ?? "").trim();
+
+    const actualMatricula = rawMatricula || document.querySelector('input[name="TBNoMatricula"]')?.value || "";
+    const actualDireccion = rawDireccion || document.querySelector('input[name="TBDireccion"]')?.value || "";
+
+    const matricula = actualMatricula.trim().toLowerCase();
+    const direccion = actualDireccion.trim().toLowerCase();
 
     if (!matricula && !direccion) {
       showModal("Atención", "Debes ingresar la Matricula, la Direccion o ambas para buscar", "error");
       return;
+    }
+
+    if (!rawMatricula && actualMatricula) {
+      setSearchForm((prev) => ({ ...prev, TBNoMatricula: actualMatricula.toUpperCase() }));
+    }
+    if (!rawDireccion && actualDireccion) {
+      setSearchForm((prev) => ({ ...prev, TBDireccion: actualDireccion.toUpperCase() }));
     }
 
     setSearching(true);
@@ -198,7 +211,7 @@ export default function PasoInmueble({ onSuccess, onBack }) {
       <section className="app-surface">
         <div className="app-section-title">
           <h2>Paso 2. Bien inmueble</h2>
-          <p>Busca un inmueble existente o crea uno nuevo usando el mismo estilo de formularios del sistema.</p>
+          <p>Busca un inmueble existente o crea uno nuevo como objeto del contrato.</p>
         </div>
 
         <div className="wizard-form-grid">
@@ -207,14 +220,14 @@ export default function PasoInmueble({ onSuccess, onBack }) {
             name="TBNoMatricula"
             placeholder="Numero de Matricula"
             value={searchForm.TBNoMatricula}
-            onChange={handleSearchChange}
+            onInput={handleSearchChange}
           />
           <input
             autoComplete="off"
             name="TBDireccion"
             placeholder="Direccion"
             value={searchForm.TBDireccion}
-            onChange={handleSearchChange}
+            onInput={handleSearchChange}
           />
           <button className="app-button app-button--primary" type="button" onClick={buscarInmueble}>
             {searching ? "Buscando..." : "Buscar"}
@@ -253,8 +266,8 @@ export default function PasoInmueble({ onSuccess, onBack }) {
           </div>
 
           <div className="wizard-form-grid">
-            <input autoComplete="off" name="TBNoMatricula" placeholder="Numero de Matricula" value={form.TBNoMatricula} onChange={handleFormChange} />
-            <input autoComplete="off" name="TBDireccion" placeholder="Direccion" value={form.TBDireccion} onChange={handleFormChange} />
+            <input autoComplete="off" name="TBNoMatricula" placeholder="Numero de Matricula" value={form.TBNoMatricula} onInput={handleFormChange} />
+            <input autoComplete="off" name="TBDireccion" placeholder="Direccion" value={form.TBDireccion} onInput={handleFormChange} />
             <select name="TCId" value={form.TCId} onChange={handleFormChange}>
               <option value="">-- Seleccionar Ciudad --</option>
               {ciudades.map((ciu) => (
@@ -263,11 +276,11 @@ export default function PasoInmueble({ onSuccess, onBack }) {
             </select>
             <select name="TBTipo" value={form.TBTipo} onChange={handleFormChange}>
               <option value="">Tipo de Inmueble</option>
-              <option value="Residencial">Residencial</option>
-              <option value="Comercial">Comercial</option>
-              <option value="Industrial">Industrial</option>
+              <option value="RESIDENCIAL">RESIDENCIAL</option>
+              <option value="COMERCIAL">COMERCIAL</option>
+              <option value="INDUSTRIAL">INDUSTRIAL</option>
             </select>
-            <textarea name="TBObs" placeholder="Observaciones" value={form.TBObs} onChange={handleFormChange} />
+            <textarea name="TBObs" placeholder="Observaciones" value={form.TBObs} onInput={handleFormChange} />
           </div>
 
           <div className="app-actions">
@@ -306,12 +319,12 @@ export default function PasoInmueble({ onSuccess, onBack }) {
         </div>
       </section>
 
-      <AppModal 
-        isOpen={modal.isOpen} 
-        title={modal.title} 
-        message={modal.message} 
-        type={modal.type} 
-        onClose={() => setModal({ ...modal, isOpen: false })} 
+      <AppModal
+        isOpen={modal.isOpen}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        onClose={() => setModal({ ...modal, isOpen: false })}
       />
     </div>
   );

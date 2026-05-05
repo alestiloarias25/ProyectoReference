@@ -28,23 +28,6 @@ class TEmpresasSerializer(serializers.ModelSerializer):
 
 
 class TCiudadesSerializer(serializers.ModelSerializer):
-    TCDescripcion = serializers.CharField(required=False, allow_blank=True)
-
-    def validate(self, attrs):
-        descripcion = (attrs.get("TCDescripcion") or "").strip()
-        nombre = (attrs.get("TCNombre") or "").strip()
-
-        if not descripcion and nombre:
-            attrs["TCDescripcion"] = nombre
-            descripcion = nombre
-
-        if not descripcion:
-            raise serializers.ValidationError({
-                "TCDescripcion": "La descripcion es requerida o debe ingresar un nombre para generarla automaticamente."
-            })
-
-        return attrs
-
     class Meta:
         model = TCiudades
         fields = "__all__"

@@ -22,19 +22,9 @@ class RecalculoPuntajeService:
         """
         Valida la cantidad de reportes y retorna el puntaje
         CantidadReportes: 0=0, 1=20, 2=40, 3=60, 4=80, 5+=100
+        Acepta decimales para revertir proporcionalmente la afectación según pagos.
         """
-        if cantidad == 0:
-            return 0
-        elif cantidad == 1:
-            return 20
-        elif cantidad == 2:
-            return 40
-        elif cantidad == 3:
-            return 60
-        elif cantidad == 4:
-            return 80
-        else:  # 5 o más
-            return 100
+        return min(100, float(cantidad) * 20)
 
     @staticmethod
     def get_tipo_reporte_weight(tipo_reporte_id):
@@ -83,11 +73,11 @@ class RecalculoPuntajeService:
     def get_recencia_score(fecha_reporte):
         """
         Calcula el puntaje según la antigüedad del reporte
-        (<3 meses)=100, (3 a 6 meses)=80, (6 a 12 meses)=60,
-        (12 a 24 meses)=30, (24+ meses)=10
+        (<3 meses)=100, (3 a 6 meses)=90, (6 a 12 meses)=70,
+        (12 a 24 meses)=50, (24+ meses)=30
         """
         if not fecha_reporte:
-            return 10
+            return 30
         
         ahora = timezone.now()
         dias_transcurridos = (ahora - fecha_reporte).days
@@ -95,13 +85,13 @@ class RecalculoPuntajeService:
         if dias_transcurridos < 90:  # < 3 meses
             return 100
         elif dias_transcurridos < 180:  # 3 a 6 meses
-            return 80
+            return 90
         elif dias_transcurridos < 365:  # 6 a 12 meses
-            return 60
+            return 70
         elif dias_transcurridos < 730:  # 12 a 24 meses
-            return 30
+            return 50
         else:  # 24+ meses
-            return 10
+            return 30
 
     @staticmethod
     def obtener_reportes_arrendatario(tp_no_documento):
@@ -113,52 +103,84 @@ class RecalculoPuntajeService:
             TCAIDContrato__personas__TCARTipoParticipacion__in=['ARRENDATARIO', 'CODEUDOR']
         ).select_related('TRHTipoReporte', 'TCAIDContrato')
 
+    @staticmethod
+    def get_factor_deuda(reporte):
+        """
+        Calcula el factor de deuda de 0 a 1, donde 1 es deuda completa y 0 es pagado totalmente.
+        """
+        valor_adeudado = float(reporte.TRHValorAdeudado or 0)
+        if valor_adeudado <= 0:
+            return 1.0
+        from django.db.models import Sum
+        pagos_sum = reporte.pagos.aggregate(total=Sum('TRHValorPagado'))['total'] or 0
+        pagos_sum = float(pagos_sum)
+        factor = 1.0 - (pagos_sum / valor_adeudado)
+        return max(0.0, min(1.0, factor))
+
     @classmethod
     def calcular_penalizacion_total(cls, tp_no_documento):
         """
         Calcula la penalización total según la fórmula:
         PenalizaciónTotal = (CantidadReportes * 25%) + (TipoReporte * 30%) + 
                            (ValorAdeudado * 30%) + (Recencia * 15%)
+        Aplica un factor_deuda para reducir la penalización proporcionalmente a los pagos.
         """
         reportes = cls.obtener_reportes_arrendatario(tp_no_documento)
         
         if not reportes.exists():
             return 0
+            
+        ahora = timezone.now()
         
-        # 1. Cantidad de reportes
-        cantidad_reportes = reportes.count()
-        cantidad_score = cls.get_cantidad_reportes_score(cantidad_reportes)
-        cantidad_ponderado = (cantidad_score / 100) * 25  # 25%
+        # Separar reportes
+        reportes_cf = [r for r in reportes if r.TRHTipoReporte.TRHTipoReporte == 'CF']
+        # Reportes negativos aplicables (enseguida)
+        reportes_negativos_aplicables = [r for r in reportes if r.TRHTipoReporte.TRHTipoReporte != 'CF']
         
-        # 2. Tipo de reporte (promedio de pesos)
-        tipo_scores = []
-        for reporte in reportes:
-            peso = cls.get_tipo_reporte_weight(reporte.TRHTipoReporte.TRHTipoReporte)
-            tipo_scores.append(peso)
+        penalizacion_total = 0
         
-        tipo_promedio = sum(tipo_scores) / len(tipo_scores) if tipo_scores else 50
-        tipo_ponderado = (tipo_promedio / 100) * 30  # 30%
-        
-        # 3. Valor adeudado total
-        valor_total = sum(
-            float(r.TRHValorAdeudado or 0) for r in reportes
-        )
-        valor_score = cls.get_valor_adeudado_score(valor_total)
-        valor_ponderado = (valor_score / 100) * 30  # 30%
-        
-        # 4. Recencia (promedio)
-        recencia_scores = []
-        for reporte in reportes:
-            score = cls.get_recencia_score(reporte.TRHFechaReporte)
-            recencia_scores.append(score)
-        
-        recencia_promedio = sum(recencia_scores) / len(recencia_scores) if recencia_scores else 10
-        recencia_ponderado = (recencia_promedio / 100) * 15  # 15%
-        
-        # Total
-        penalizacion_total = cantidad_ponderado + tipo_ponderado + valor_ponderado + recencia_ponderado
-        
-        return penalizacion_total
+        if reportes_negativos_aplicables:
+            factores_deuda = [cls.get_factor_deuda(r) for r in reportes_negativos_aplicables]
+            cantidad_total = len(reportes_negativos_aplicables)
+
+            # 1. Cantidad de reportes (efectiva)
+            cantidad_efectiva = sum(factores_deuda)
+            cantidad_score = cls.get_cantidad_reportes_score(cantidad_efectiva)
+            cantidad_ponderado = (cantidad_score / 100) * 25  # 25%
+            
+            # 2. Tipo de reporte (promedio de pesos afectado por pagos)
+            tipo_scores = []
+            for r, factor in zip(reportes_negativos_aplicables, factores_deuda):
+                peso = cls.get_tipo_reporte_weight(r.TRHTipoReporte.TRHTipoReporte)
+                tipo_scores.append(peso * factor)
+            
+            tipo_promedio = sum(tipo_scores) / cantidad_total if cantidad_total > 0 else 50
+            tipo_ponderado = (tipo_promedio / 100) * 30  # 30%
+            
+            # 3. Valor adeudado total (saldos)
+            valor_total = sum(
+                float(r.TRHValorAdeudado or 0) * factor for r, factor in zip(reportes_negativos_aplicables, factores_deuda)
+            )
+            valor_score = cls.get_valor_adeudado_score(valor_total)
+            valor_ponderado = (valor_score / 100) * 30  # 30%
+            
+            # 4. Recencia (promedio afectado por pagos)
+            recencia_scores = []
+            for r, factor in zip(reportes_negativos_aplicables, factores_deuda):
+                score = cls.get_recencia_score(r.TRHFechaReporte)
+                recencia_scores.append(score * factor)
+            
+            recencia_promedio = sum(recencia_scores) / cantidad_total if cantidad_total > 0 else 10
+            recencia_ponderado = (recencia_promedio / 100) * 15  # 15%
+            
+            penalizacion_total = cantidad_ponderado + tipo_ponderado + valor_ponderado + recencia_ponderado
+            
+        # Aplicar el beneficio de CF como un bono fijo de 50 puntos de puntaje real
+        if reportes_cf:
+            bonificacion_cf = 5  # 5 unidades de penalización equivale a 50 puntos en el puntaje final
+            penalizacion_total -= bonificacion_cf * len(reportes_cf)
+
+        return max(0, penalizacion_total)
 
     @classmethod
     def calcular_nuevo_puntaje(cls, tp_no_documento):
@@ -236,49 +258,60 @@ class DetalleRecalculoService:
             }
         
         service = RecalculoPuntajeService
+        ahora = timezone.now()
         
-        # Cantidad de reportes
-        cantidad_reportes = reportes.count()
-        cantidad_score = service.get_cantidad_reportes_score(cantidad_reportes)
+        reportes_cf = [r for r in reportes if r.TRHTipoReporte.TRHTipoReporte == 'CF']
+        reportes_negativos_aplicables = [r for r in reportes if r.TRHTipoReporte.TRHTipoReporte != 'CF']
+        reportes_negativos_gracia = []
         
-        # Tipo de reporte
+        factores_deuda = [service.get_factor_deuda(r) for r in reportes_negativos_aplicables]
+        cantidad_total = len(reportes_negativos_aplicables)
+        cantidad_efectiva = sum(factores_deuda)
+        cantidad_score = service.get_cantidad_reportes_score(cantidad_efectiva)
+        
         tipo_detalles = []
-        for reporte in reportes:
-            peso = service.get_tipo_reporte_weight(reporte.TRHTipoReporte.TRHTipoReporte)
+        for r, factor in zip(reportes_negativos_aplicables, factores_deuda):
+            peso = service.get_tipo_reporte_weight(r.TRHTipoReporte.TRHTipoReporte)
             tipo_detalles.append({
-                'tipo': reporte.TRHTipoReporte.TRHTipoReporte,
-                'peso': peso
+                'tipo': r.TRHTipoReporte.TRHTipoReporte,
+                'peso': peso,
+                'factor_deuda': factor,
+                'peso_efectivo': peso * factor
             })
-        tipo_promedio = sum(d['peso'] for d in tipo_detalles) / len(tipo_detalles) if tipo_detalles else 50
+        tipo_promedio = sum(d['peso_efectivo'] for d in tipo_detalles) / cantidad_total if cantidad_total > 0 else 50
         
-        # Valor adeudado
-        valor_total = sum(float(r.TRHValorAdeudado or 0) for r in reportes)
+        valor_total = sum(float(r.TRHValorAdeudado or 0) * factor for r, factor in zip(reportes_negativos_aplicables, factores_deuda))
         valor_score = service.get_valor_adeudado_score(valor_total)
         
-        # Recencia
         recencia_detalles = []
-        for reporte in reportes:
-            score = service.get_recencia_score(reporte.TRHFechaReporte)
-            dias = (timezone.now() - reporte.TRHFechaReporte).days
+        for r, factor in zip(reportes_negativos_aplicables, factores_deuda):
+            score = service.get_recencia_score(r.TRHFechaReporte)
+            dias = (ahora - r.TRHFechaReporte).days
             recencia_detalles.append({
-                'fecha': reporte.TRHFechaReporte.isoformat(),
+                'fecha': r.TRHFechaReporte.isoformat(),
                 'dias_atras': dias,
-                'score': score
+                'score': score,
+                'factor_deuda': factor,
+                'score_efectivo': score * factor
             })
-        recencia_promedio = sum(d['score'] for d in recencia_detalles) / len(recencia_detalles) if recencia_detalles else 10
+        recencia_promedio = sum(d['score_efectivo'] for d in recencia_detalles) / cantidad_total if cantidad_total > 0 else 10
         
-        # Cálculos finales
         cantidad_ponderado = (cantidad_score / 100) * 25
         tipo_ponderado = (tipo_promedio / 100) * 30
         valor_ponderado = (valor_score / 100) * 30
         recencia_ponderado = (recencia_promedio / 100) * 15
         
-        penalizacion_total = cantidad_ponderado + tipo_ponderado + valor_ponderado + recencia_ponderado
+        penalizacion_base = cantidad_ponderado + tipo_ponderado + valor_ponderado + recencia_ponderado
+        
+        peso_cf = service.get_tipo_reporte_weight('CF') if reportes_cf else 0
+        penalizacion_total = max(0, penalizacion_base + (peso_cf * len(reportes_cf)))
         puntaje_final = max(int(1000 - (penalizacion_total * 10)), 0)
         
         return {
             'TPNoDocumento': tp_no_documento,
-            'cantidad_reportes': cantidad_reportes,
+            'cantidad_reportes_aplicables': cantidad_reportes,
+            'cantidad_reportes_cf': len(reportes_cf),
+            'cantidad_reportes_gracia': len(reportes_negativos_gracia),
             'cantidad_score': cantidad_score,
             'cantidad_ponderado': round(cantidad_ponderado, 2),
             'tipo_promedio_peso': round(tipo_promedio, 2),
@@ -290,6 +323,8 @@ class DetalleRecalculoService:
             'recencia_promedio': round(recencia_promedio, 2),
             'recencia_ponderado': round(recencia_ponderado, 2),
             'recencia_detalles': recencia_detalles,
+            'penalizacion_base': round(penalizacion_base, 2),
+            'ajuste_cf': peso_cf * len(reportes_cf),
             'penalizacion_total': round(penalizacion_total, 2),
             'puntaje_final': puntaje_final
         }

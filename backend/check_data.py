@@ -10,4 +10,4 @@ for e in TEmpresas.objects.all():
 
 print('Ciudades:')
 for c in TCiudades.objects.all():
-    print(f'ID: {c.TCId}, Desc: "{c.TCDescripcion}"')
+    print(f'ID: {c.TCId}, Nombre: "{c.TCNombre}"')

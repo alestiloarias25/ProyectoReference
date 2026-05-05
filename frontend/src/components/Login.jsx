@@ -27,12 +27,30 @@ function Login() {
 
     axios
       .post("http://127.0.0.1:8000/api/auth/login/", form)
-      .then((res) => {
+      .then(async (res) => {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", res.data.user);
+        localStorage.setItem("full_name", res.data.name);
         localStorage.setItem("role", res.data.role);
         localStorage.setItem("role_label", res.data.role_label);
-        navigate("/referencias");
+        localStorage.removeItem("aviso_habeas_data");
+
+        if (res.data.role === "ARRENDADOR") {
+          try {
+            await axios.get(`http://127.0.0.1:8000/api/persona/${res.data.user}/`, {
+              headers: { Authorization: `Token ${res.data.token}` }
+            });
+            navigate("/referencias");
+          } catch (error) {
+            if (error.response && error.response.status === 404) {
+              navigate("/personas/crear");
+            } else {
+              navigate("/referencias");
+            }
+          }
+        } else {
+          navigate("/referencias");
+        }
       })
       .catch(() => {
         showModal("Acceso denegado", "Credenciales incorrectas.", "error");
@@ -42,8 +60,8 @@ function Login() {
   return (
     <AuthShell
       eyebrow="Acceso principal"
-      title={<>Inicia sesión y <span className="app-text-accent">gestiona</span></>}
-      subtitle="Ingresa para administrar tus referencias y reportes con nuestra nueva plataforma corporativa."
+      title="Inicia sesión"
+      subtitle="Si eres Arrendador administra tus Bienes Inmuebles y reporta novedades y si eres Arrendatario consulta tu puntaje"
       footerLinks={[
         { to: "/register", label: "Crear cuenta" },
         { to: "/forgot", label: "Olvide mi contrasena" },

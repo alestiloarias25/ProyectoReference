@@ -14,6 +14,7 @@ import ConsultarPuntajeArrendatario from "./pages/ConsultarPuntajeArrendatario";
 import AdminPanel from "./pages/AdminPanel";
 import AdministrarBienesInmuebles from "./pages/AdministrarBienesInmuebles";
 import ConsultarBienesInmuebles from "./pages/ConsultarBienesInmuebles";
+import CrearPersona from "./pages/CrearPersona";
 
 
 function App() {
@@ -100,6 +101,15 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["ADMINISTRADOR", "ARRENDADOR"]}>
               <AdministrarBienesInmuebles />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/personas/crear"
+          element={
+            <ProtectedRoute allowedRoles={["ADMINISTRADOR", "ARRENDADOR"]}>
+              <CrearPersona />
             </ProtectedRoute>
           }
         />

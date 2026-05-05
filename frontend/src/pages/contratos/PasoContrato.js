@@ -37,7 +37,7 @@ const PasoContrato = ({ personaIds, inmuebleId, onBack, onSuccess }) => {
     personaIds.map((p) => ({
       TPTipoDocumento: p.TPTipoDocumento,
       TPNoDocumento: p.TPNoDocumento,
-      TCARTipoParticipacion: "",
+      TCARTipoParticipacion: localStorage.getItem("role") === "ARRENDADOR" && p.TPNoDocumento === localStorage.getItem("user") ? "ARRENDADOR" : "",
     }))
   );
 
@@ -48,7 +48,7 @@ const PasoContrato = ({ personaIds, inmuebleId, onBack, onSuccess }) => {
       personaIds.map((p) => ({
         TPTipoDocumento: p.TPTipoDocumento,
         TPNoDocumento: p.TPNoDocumento,
-        TCARTipoParticipacion: "",
+        TCARTipoParticipacion: localStorage.getItem("role") === "ARRENDADOR" && p.TPNoDocumento === localStorage.getItem("user") ? "ARRENDADOR" : "",
       }))
     );
   }, [personaIds]);
@@ -168,7 +168,7 @@ const PasoContrato = ({ personaIds, inmuebleId, onBack, onSuccess }) => {
       <section className="app-surface">
         <div className="app-section-title">
           <h2>Paso 3. Crear contrato de arrendamiento</h2>
-          <p>Asigna participantes y completa los datos del contrato dentro del mismo formato unificado.</p>
+          <p>Asigna el rol de los participantes y completa los datos del contrato.</p>
         </div>
 
         {inmueble && (
@@ -194,16 +194,22 @@ const PasoContrato = ({ personaIds, inmuebleId, onBack, onSuccess }) => {
                   <strong>{persona.TPNombres} {persona.TPApellidos}</strong>
                   <small>{persona.TPTipoDocumento} - {persona.TPNoDocumento}</small>
                 </div>
-                <select
-                  value={roles[index]?.TCARTipoParticipacion || ""}
-                  onChange={(e) => handleRoleChange(index, e.target.value)}
-                  required
-                >
-                  <option value="">Seleccionar rol</option>
-                  {roleOptions.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
+                {localStorage.getItem("role") === "ARRENDADOR" && persona.TPNoDocumento === localStorage.getItem("user") ? (
+                  <div className="app-badge app-badge--info" style={{ padding: "0.5rem 1rem", borderRadius: "var(--radius-md)" }}>
+                    ARRENDADOR (Tú)
+                  </div>
+                ) : (
+                  <select
+                    value={roles[index]?.TCARTipoParticipacion || ""}
+                    onChange={(e) => handleRoleChange(index, e.target.value)}
+                    required
+                  >
+                    <option value="">Seleccionar rol</option>
+                    {roleOptions.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                )}
               </div>
             ))}
           </div>
@@ -240,7 +246,7 @@ const PasoContrato = ({ personaIds, inmuebleId, onBack, onSuccess }) => {
             </div>
 
             <div className="app-field">
-              <label htmlFor="valor-canon">Valor Canon Mensual</label>
+              <label htmlFor="valor-canon">Valor Canon Periodo</label>
               <input id="valor-canon" type="number" name="TCAValorCanonContrato" placeholder="Valor canon" value={form.TCAValorCanonContrato} onChange={handleChange} required className="app-input" />
             </div>
             <div className="app-field">
@@ -263,12 +269,12 @@ const PasoContrato = ({ personaIds, inmuebleId, onBack, onSuccess }) => {
         </section>
       </form>
 
-      <AppModal 
-        isOpen={modal.isOpen} 
-        title={modal.title} 
-        message={modal.message} 
-        type={modal.type} 
-        onClose={() => setModal({ ...modal, isOpen: false })} 
+      <AppModal
+        isOpen={modal.isOpen}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        onClose={() => setModal({ ...modal, isOpen: false })}
       />
     </div>
   );

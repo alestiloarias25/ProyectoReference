@@ -186,9 +186,63 @@
   font-weight: 700;
 }
 
-.cp-info-list {
+..cp-info-list {
   display: grid;
   gap: 8px;
+}
+
+.cp-historial-box {
+  padding: 20px;
+  border-radius: 18px;
+  background: #f9fbff;
+  border: 1px solid rgba(37, 99, 235, 0.14);
+}
+
+.cp-historial-dropdowns {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.cp-historial-dropdown {
+  padding: 16px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid rgba(37, 99, 235, 0.12);
+}
+
+.cp-historial-dropdown summary {
+  font-weight: 700;
+  cursor: pointer;
+  padding: 8px 4px;
+  margin-bottom: 12px;
+  list-style: none;
+}
+
+.cp-historial-table {
+  display: grid;
+  gap: 14px;
+  padding-top: 10px;
+}
+
+.cp-historial-entry {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #f3f8ff;
+  border: 1px solid rgba(37, 99, 235, 0.08);
+}
+
+.cp-historial-entry div {
+  color: #1f2937;
+}
+
+.cp-empty-state {
+  padding: 14px;
+  border-radius: 14px;
+  background: #eef2ff;
+  color: #3730a3;
 }
 
 .cp-level--excelente {
