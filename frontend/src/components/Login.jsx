@@ -26,7 +26,7 @@ function Login() {
     e.preventDefault();
 
     axios
-      .post("http://127.0.0.1:8000/api/auth/login/", form)
+      .post(`${process.env.REACT_APP_API_URL || ""}/api/auth/login/`, form)
       .then(async (res) => {
         localStorage.setItem("token", res.data.token);
         localStorage.setItem("user", res.data.user);
@@ -37,7 +37,7 @@ function Login() {
 
         if (res.data.role === "ARRENDADOR") {
           try {
-            await axios.get(`http://127.0.0.1:8000/api/persona/${res.data.user}/`, {
+            await axios.get(`${process.env.REACT_APP_API_URL || ""}/api/persona/${res.data.user}/`, {
               headers: { Authorization: `Token ${res.data.token}` }
             });
             navigate("/referencias");
@@ -111,3 +111,5 @@ function Login() {
 }
 
 export default Login;
+
+

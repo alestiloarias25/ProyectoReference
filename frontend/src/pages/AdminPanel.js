@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AppShell from "../components/AppShell";
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = `${process.env.REACT_APP_API_URL || ""}`;
 
 const initialUserForm = {
   username: "",
@@ -424,3 +424,5 @@ export default function AdminPanel() {
     </AppShell>
   );
 }
+
+

@@ -29,7 +29,7 @@ export default function Autores() {
   const cargarAutores = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://127.0.0.1:8000/api/autores/", {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL || ""}/api/autores/`, {
         headers: { Authorization: `Token ${token}` },
       });
       setAutores(res.data);
@@ -43,7 +43,7 @@ export default function Autores() {
 
   const cargarProfesiones = async () => {
     try {
-      const res = await axios.get("http://127.0.0.1:8000/api/profesiones/", {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL || ""}/api/profesiones/`, {
         headers: { Authorization: `Token ${token}` },
       });
       setProfesiones(res.data);
@@ -62,11 +62,11 @@ export default function Autores() {
   const guardarAutor = async () => {
     try {
       if (modo === "agregar") {
-        await axios.post("http://127.0.0.1:8000/api/autores/", form, {
+        await axios.post(`${process.env.REACT_APP_API_URL || ""}/api/autores/`, form, {
           headers: { Authorization: `Token ${token}` },
         });
       } else {
-        await axios.put(`http://127.0.0.1:8000/api/autores/${form.documento}/`, form, {
+        await axios.put(`${process.env.REACT_APP_API_URL || ""}/api/autores/${form.documento}/`, form, {
           headers: { Authorization: `Token ${token}` },
         });
       }
@@ -84,7 +84,7 @@ export default function Autores() {
   const eliminarAutor = async () => {
     if (!form.documento) return;
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/autores/${form.documento}/`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL || ""}/api/autores/${form.documento}/`, {
         headers: { Authorization: `Token ${token}` },
       });
 
@@ -278,3 +278,5 @@ export default function Autores() {
     </AppShell>
   );
 }
+
+

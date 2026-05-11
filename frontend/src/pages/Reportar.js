@@ -54,10 +54,10 @@ const Reportar = () => {
     }
 
     Promise.all([
-      axios.get("http://127.0.0.1:8000/api/contratoarriendo/", {
+      axios.get(`${process.env.REACT_APP_API_URL || ""}/api/contratoarriendo/`, {
         headers: { Authorization: `Token ${token}` },
       }),
-      axios.get("http://127.0.0.1:8000/referencias/api/tiporeporte/", {
+      axios.get(`${process.env.REACT_APP_API_URL || ""}/referencias/api/tiporeporte/`, {
         headers: { Authorization: `Token ${token}` },
       }),
     ])
@@ -74,7 +74,7 @@ const Reportar = () => {
   }, [token, navigate]);
 
   const loadExistingReports = (contratoId) => {
-    axios.get(`http://127.0.0.1:8000/referencias/api/historial/?TCAIDContrato=${contratoId}`, {
+    axios.get(`${process.env.REACT_APP_API_URL || ""}/referencias/api/historial/?TCAIDContrato=${contratoId}`, {
       headers: { Authorization: `Token ${token}` },
     }).then(res => {
       setExistingReports(res.data);
@@ -137,7 +137,7 @@ const Reportar = () => {
 
   const handleDeleteReport = (reportId) => {
     if (window.confirm("¿Estás seguro de que deseas eliminar este reporte?")) {
-      axios.delete(`http://127.0.0.1:8000/referencias/api/historial/${reportId}/`, {
+      axios.delete(`${process.env.REACT_APP_API_URL || ""}/referencias/api/historial/${reportId}/`, {
         headers: { Authorization: `Token ${token}` }
       }).then(() => {
         showModal("Exito", "Reporte eliminado correctamente", "success");
@@ -178,7 +178,7 @@ const Reportar = () => {
       }
 
       setSubmitting(true);
-      axios.put(`http://127.0.0.1:8000/referencias/api/historial/${editingReportId}/`, {
+      axios.put(`${process.env.REACT_APP_API_URL || ""}/referencias/api/historial/${editingReportId}/`, {
         TCAIDContrato: selectedContrato,
         TRHTipoReporte: form.TRHTipoReporte,
         TRHValorAdeudado: form.TRHValorAdeudado ? parseFloat(form.TRHValorAdeudado) : null,
@@ -234,7 +234,7 @@ const Reportar = () => {
     }));
 
     axios
-      .post("http://127.0.0.1:8000/referencias/api/historial/", payload, {
+      .post(`${process.env.REACT_APP_API_URL || ""}/referencias/api/historial/`, payload, {
         headers: {
           Authorization: `Token ${token}`,
           "Content-Type": "application/json",
@@ -294,7 +294,7 @@ const Reportar = () => {
   const handleSubmitPago = (e) => {
     e.preventDefault();
     setSubmitting(true);
-    axios.post("http://127.0.0.1:8000/referencias/api/pagos/", {
+    axios.post(`${process.env.REACT_APP_API_URL || ""}/referencias/api/pagos/`, {
       TRHId: pagoModal.TRHId,
       TCAIDContrato: pagoModal.TCAIDContrato,
       TRHValorPagado: parseFloat(pagoModal.TRHValorPagado),
@@ -684,3 +684,5 @@ const Reportar = () => {
 };
 
 export default Reportar;
+
+

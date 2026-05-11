@@ -44,7 +44,7 @@ export default function ContratoForm() {
 
     try {
       const res = await axios.post(
-        "http://127.0.0.1:8000/api/contratos/",
+        `${process.env.REACT_APP_API_URL || ""}/api/contratos/`,
         contrato,
         {
           headers: {
@@ -68,7 +68,7 @@ export default function ContratoForm() {
   const agregarPersona = async () => {
     try {
       await axios.post(
-        "http://127.0.0.1:8000/api/contrato-personas/",
+        `${process.env.REACT_APP_API_URL || ""}/api/contrato-personas/`,
         {
           contrato: contratoId,
           persona: persona.documento,
@@ -167,3 +167,5 @@ export default function ContratoForm() {
     </div>
   );
 }
+
+

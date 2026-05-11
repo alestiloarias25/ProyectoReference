@@ -38,7 +38,7 @@ const ConsultarPuntajeArrendatario = () => {
 
     try {
       const response = await axios.get(
-        `http://127.0.0.1:8000/referencias/api/consultar-puntaje/por_documento/?tp_no_documento=${documentoBuscado}`,
+        `${process.env.REACT_APP_API_URL || ""}/referencias/api/consultar-puntaje/por_documento/?tp_no_documento=${documentoBuscado}`,
         {
           headers: { Authorization: `Token ${token}` },
         }
@@ -47,7 +47,7 @@ const ConsultarPuntajeArrendatario = () => {
 
       try {
         const detallesResponse = await axios.get(
-          `http://127.0.0.1:8000/referencias/api/historial/detalles_calculo/?tp_no_documento=${documentoBuscado}`,
+          `${process.env.REACT_APP_API_URL || ""}/referencias/api/historial/detalles_calculo/?tp_no_documento=${documentoBuscado}`,
           {
             headers: { Authorization: `Token ${token}` },
           }
@@ -60,7 +60,7 @@ const ConsultarPuntajeArrendatario = () => {
 
       try {
         const historialResponse = await axios.get(
-          `http://127.0.0.1:8000/referencias/api/consultar-puntaje/historial/?tp_no_documento=${documentoBuscado}`,
+          `${process.env.REACT_APP_API_URL || ""}/referencias/api/consultar-puntaje/historial/?tp_no_documento=${documentoBuscado}`,
           {
             headers: { Authorization: `Token ${token}` },
           }
@@ -454,3 +454,4 @@ const ConsultarPuntajeArrendatario = () => {
 };
 
 export default ConsultarPuntajeArrendatario;
+

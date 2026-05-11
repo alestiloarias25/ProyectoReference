@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import AppModal from "../../components/AppModal";
 
-const API_URL = "http://127.0.0.1:8000/api/persona/";
-const API_EMPRESAS = "http://127.0.0.1:8000/api/empresas/";
-const API_CIUDADES = "http://127.0.0.1:8000/api/ciudades/";
+const API_URL = `${process.env.REACT_APP_API_URL || ""}/api/persona/`;
+const API_EMPRESAS = `${process.env.REACT_APP_API_URL || ""}/api/empresas/`;
+const API_CIUDADES = `${process.env.REACT_APP_API_URL || ""}/api/ciudades/`;
 
 const initialEmpresa = {
   TENit: "",
@@ -130,7 +130,7 @@ export default function PasoPersonas({ onNext }) {
     const userDoc = localStorage.getItem("user");
     if (role === "ARRENDADOR" && userDoc) {
       axios
-        .get(`http://127.0.0.1:8000/api/persona/${userDoc}/`, {
+        .get(`${process.env.REACT_APP_API_URL || ""}/api/persona/${userDoc}/`, {
           headers: { Authorization: `Token ${token}` }
         })
         .then((res) => {
@@ -486,3 +486,5 @@ export default function PasoPersonas({ onNext }) {
     </div>
   );
 }
+
+

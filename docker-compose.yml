@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: referenciate_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-12345}
+      POSTGRES_DB: ${DB_NAME:-referencedb}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: referenciate_backend
+    restart: always
+    environment:
+      - DEBUG=${DEBUG:-False}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-www.referenciate.com,referenciate.com,localhost,127.0.0.1}
+      - DB_NAME=${DB_NAME:-referencedb}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-12345}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - PORT=8000
+    depends_on:
+      - db
+    # No exposemos el puerto 8000 al exterior, Nginx (frontend) se encargará de enrutarlo
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: referenciate_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:

@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AppModal from "../../components/AppModal";
 
-const API_INMUEBLES = "http://127.0.0.1:8000/api/bienesinmuebles/";
-const API_CIUDADES = "http://127.0.0.1:8000/api/ciudades/";
+const API_INMUEBLES = `${process.env.REACT_APP_API_URL || ""}/api/bienesinmuebles/`;
+const API_CIUDADES = `${process.env.REACT_APP_API_URL || ""}/api/ciudades/`;
 
 const initialSearch = {
   TBNoMatricula: "",
@@ -329,3 +329,5 @@ export default function PasoInmueble({ onSuccess, onBack }) {
     </div>
   );
 }
+
+

@@ -36,7 +36,7 @@ export default function Register() {
     if (!form.no_documento) return showModal("Atención", "Ingresa tu número de documento", "error");
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/auth/check-document/?no_documento=${form.no_documento}`);
+      const response = await fetch(`${process.env.REACT_APP_API_URL || ""}/api/auth/check-document/?no_documento=${form.no_documento}`);
       const data = await response.json();
       if (data.exists) {
         showModal("Registro duplicado", "El número de documento ya está registrado. Por favor inicia sesión.", "error");
@@ -54,7 +54,7 @@ export default function Register() {
   const handleRegister = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:8000/api/auth/register/", {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || ""}/api/auth/register/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -255,3 +255,5 @@ export default function Register() {
     </AuthShell>
   );
 }
+
+

@@ -39,7 +39,7 @@ const AdministrarBienesInmuebles = () => {
     if (path.startsWith("http://") || path.startsWith("https://")) {
       return path;
     }
-    return path.startsWith("/") ? `http://127.0.0.1:8000${path}` : `http://127.0.0.1:8000/${path}`;
+    return path.startsWith("/") ? `${process.env.REACT_APP_API_URL || ""}${path}` : `${process.env.REACT_APP_API_URL || ""}/${path}`;
   };
 
   const openImageModal = (urls, index) => {
@@ -75,7 +75,7 @@ const AdministrarBienesInmuebles = () => {
 
   const fetchInmuebles = () => {
     setLoading(true);
-    axios.get("http://127.0.0.1:8000/api/bienesinmuebles/", {
+    axios.get(`${process.env.REACT_APP_API_URL || ""}/api/bienesinmuebles/`, {
       headers: { Authorization: `Token ${token}` },
     })
       .then(res => setInmuebles(res.data))
@@ -97,7 +97,7 @@ const AdministrarBienesInmuebles = () => {
   const handleMatriculaBlur = (e) => {
     const matricula = e.target.value;
     if (matricula) {
-      axios.get(`http://127.0.0.1:8000/api/bienesinmuebles/buscar_por_matricula/?matricula=${matricula}`, {
+      axios.get(`${process.env.REACT_APP_API_URL || ""}/api/bienesinmuebles/buscar_por_matricula/?matricula=${matricula}`, {
         headers: { Authorization: `Token ${token}` },
       })
         .then(res => setDireccionesSugeridas(res.data))
@@ -128,7 +128,7 @@ const AdministrarBienesInmuebles = () => {
     }
 
     if (editingId) {
-      axios.put(`http://127.0.0.1:8000/api/bienesinmuebles/${editingId}/`, formData, {
+      axios.put(`${process.env.REACT_APP_API_URL || ""}/api/bienesinmuebles/${editingId}/`, formData, {
         headers: {
           Authorization: `Token ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -156,7 +156,7 @@ const AdministrarBienesInmuebles = () => {
         showModal("Error", errorMessage, "error");
       }).finally(() => setSubmitting(false));
     } else {
-      axios.post("http://127.0.0.1:8000/api/bienesinmuebles/", formData, {
+      axios.post(`${process.env.REACT_APP_API_URL || ""}/api/bienesinmuebles/`, formData, {
         headers: {
           Authorization: `Token ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -203,7 +203,7 @@ const AdministrarBienesInmuebles = () => {
 
   const handleDelete = (id) => {
     if (window.confirm("¿Estás seguro de que deseas eliminar este inmueble?")) {
-      axios.delete(`http://127.0.0.1:8000/api/bienesinmuebles/${id}/`, {
+      axios.delete(`${process.env.REACT_APP_API_URL || ""}/api/bienesinmuebles/${id}/`, {
         headers: { Authorization: `Token ${token}` }
       }).then(() => {
         showModal("Éxito", "Inmueble eliminado correctamente", "success");
@@ -242,7 +242,7 @@ const AdministrarBienesInmuebles = () => {
     const formData = new FormData();
     formData.append('imagen', file);
 
-    axios.post(`http://127.0.0.1:8000/api/bienesinmuebles/${uploadingInmuebleId}/upload_photo/`, formData, {
+    axios.post(`${process.env.REACT_APP_API_URL || ""}/api/bienesinmuebles/${uploadingInmuebleId}/upload_photo/`, formData, {
       headers: {
         Authorization: `Token ${token}`,
         'Content-Type': 'multipart/form-data'
@@ -602,3 +602,5 @@ const AdministrarBienesInmuebles = () => {
 };
 
 export default AdministrarBienesInmuebles;
+
+

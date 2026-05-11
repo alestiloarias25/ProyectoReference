@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 import AppShell from "../components/AppShell";
 import AppModal from "../components/AppModal";
 
-const API_URL = "http://127.0.0.1:8000/api/persona/";
-const API_EMPRESAS = "http://127.0.0.1:8000/api/empresas/";
-const API_CIUDADES = "http://127.0.0.1:8000/api/ciudades/";
+const API_URL = `${process.env.REACT_APP_API_URL || ""}/api/persona/`;
+const API_EMPRESAS = `${process.env.REACT_APP_API_URL || ""}/api/empresas/`;
+const API_CIUDADES = `${process.env.REACT_APP_API_URL || ""}/api/ciudades/`;
 
 export default function CrearPersona() {
   const navigate = useNavigate();
@@ -203,3 +203,5 @@ export default function CrearPersona() {
     </AppShell>
   );
 }
+
+

@@ -3,8 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import AppModal from "../../components/AppModal";
 
-const API_INMUEBLE = "http://127.0.0.1:8000/api/bienesinmuebles/";
-const API_CONTRATO = "http://127.0.0.1:8000/api/contratoarriendo/";
+const API_INMUEBLE = `${process.env.REACT_APP_API_URL || ""}/api/bienesinmuebles/`;
+const API_CONTRATO = `${process.env.REACT_APP_API_URL || ""}/api/contratoarriendo/`;
 
 const initialForm = {
   TCAFechaContrato: "",
@@ -281,3 +281,5 @@ const PasoContrato = ({ personaIds, inmuebleId, onBack, onSuccess }) => {
 };
 
 export default PasoContrato;
+
+

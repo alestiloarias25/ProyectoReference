@@ -20,7 +20,7 @@ const ConsultarBienesInmuebles = () => {
     if (path.startsWith("http://") || path.startsWith("https://")) {
       return path;
     }
-    return path.startsWith("/") ? `http://127.0.0.1:8000${path}` : `http://127.0.0.1:8000/${path}`;
+    return path.startsWith("/") ? `${process.env.REACT_APP_API_URL || ""}${path}` : `${process.env.REACT_APP_API_URL || ""}/${path}`;
   };
 
   const openImageModal = (urls, index) => {
@@ -53,7 +53,7 @@ const ConsultarBienesInmuebles = () => {
     e.preventDefault();
     setLoading(true);
     setSearched(true);
-    axios.get(`http://127.0.0.1:8000/api/bienesinmuebles/buscar/?direccion=${direccion}`, {
+    axios.get(`${process.env.REACT_APP_API_URL || ""}/api/bienesinmuebles/buscar/?direccion=${direccion}`, {
       headers: { Authorization: `Token ${token}` },
     })
       .then(res => {
@@ -251,3 +251,4 @@ const ConsultarBienesInmuebles = () => {
 };
 
 export default ConsultarBienesInmuebles;
+
