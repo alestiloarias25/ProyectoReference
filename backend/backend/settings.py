@@ -26,8 +26,6 @@ SECRET_KEY = 'django-insecure-*aadsh+yhc8d&wpv!+o*vl6j$(v+%u&b0t%(t72vnn_f&2llw!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'www.referenciate.com,localhost,127.0.0.1').split(',')
-
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -167,3 +165,22 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'tu_correo@gmail.com'
 EMAIL_HOST_PASSWORD = 'tu_clave_de_app'    # NO tu contraseña normal
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Esta es la línea que falta:
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# 1. Permitir que Django reciba peticiones de tu dominio
+ALLOWED_HOSTS = ['referenciate.com', 'www.referenciate.com', 'backend', 'localhost', '127.0.0.1']
+
+# 2. Indicar a Django que Nginx está manejando el SSL (HTTPS)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# 3. Confiar en los orígenes para peticiones POST/Login
+CSRF_TRUSTED_ORIGINS = [
+    'https://referenciate.com',
+    'https://www.referenciate.com'
+]
+
+# 4. Seguridad de cookies (obligatorio para HTTPS)
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True

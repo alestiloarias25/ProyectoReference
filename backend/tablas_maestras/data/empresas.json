@@ -1,0 +1,44 @@
+[
+ {
+   "TENit": 0,
+   "TENombre": "Ninguna",
+   "TEDireccion": "NA",
+   "TECelular": "NA",
+   "TEId": 0,
+   "TEDescripcion": "NA",
+   "TEContacto": "NA",
+   "TEEmail": "NA",
+   "TETelefono": "NA",
+   "TEActivo": true,
+   "TEFechaCreacion": "2026-04-14 14:30:19.093002-05",
+   "TEFechaActualizacion": "2026-04-14 14:30:19.096209-05"
+ },
+ {
+   "TENit": 1,
+   "TENombre": "Independiente",
+   "TEDireccion": "NA",
+   "TECelular": "NA",
+   "TEId": 1,
+   "TEDescripcion": "NA",
+   "TEContacto": "NA",
+   "TEEmail": "NA",
+   "TETelefono": "NA",
+   "TEActivo": true,
+   "TEFechaCreacion": "2026-04-14 14:30:19.093002-05",
+   "TEFechaActualizacion": "2026-04-14 14:30:19.096209-05"
+ },
+ {
+   "TENit": 722072467,
+   "TENombre": "Olimpico Barranquilla",
+   "TEDireccion": "k 32 61 37",
+   "TECelular": "3006322526",
+   "TEId": 3,
+   "TEDescripcion": "olimpicoia",
+   "TEContacto": "Edgar arias Preciado",
+   "TEEmail": "edgar_arias@hotmail.com",
+   "TETelefono": "",
+   "TEActivo": true,
+   "TEFechaCreacion": "2026-04-14 14:30:19.093002-05",
+   "TEFechaActualizacion": "2026-04-14 14:30:19.096209-05"
+ }
+]
