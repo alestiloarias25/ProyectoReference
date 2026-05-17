@@ -17,3 +17,4 @@ ENV PORT=8000
 # Arrancamos Gunicorn apuntando al archivo wsgi
 # Nota: Si tu archivo está en backend/backend/wsgi.py, el camino es backend.wsgi
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--chdir", "/app/backend", "backend.wsgi:application"]
+

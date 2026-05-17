@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./app-shell.css";
 
@@ -10,7 +10,11 @@ const getNavItems = (role) => {
     items.push({ label: "Reportar", path: "/reportar" });
   }
 
-  if (role === "ADMINISTRADOR" || role === "ARRENDADOR" || role === "ARRENDATARIO") {
+  if (
+    role === "ADMINISTRADOR" ||
+    role === "ARRENDADOR" ||
+    role === "ARRENDATARIO"
+  ) {
     items.push({ label: "Evaluar", path: "/consultar-puntaje" });
   }
 
@@ -31,16 +35,44 @@ export default function AppShell({
 }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const role = localStorage.getItem("role");
-  const roleLabel = localStorage.getItem("role_label") || role;
-  const userName = localStorage.getItem("full_name") || localStorage.getItem("user");
-  const token = localStorage.getItem("token");
 
+  // ============================
+  // 🔥 LECTURA ESTABLE DE STORAGE
+  // ============================
+  const auth = useMemo(() => {
+    return {
+      role: localStorage.getItem("role"),
+      roleLabel: localStorage.getItem("role_label"),
+      userName:
+        localStorage.getItem("full_name") ||
+        localStorage.getItem("user"),
+      token: localStorage.getItem("token"),
+    };
+  }, []);
+
+  const roleLabel = auth.roleLabel || auth.role;
+  const token = auth.token;
+  const userName = auth.userName;
+
+  // ============================
+  // NAV ESTABLE
+  // ============================
+  const navItems = useMemo(() => {
+    return getNavItems(auth.role);
+  }, [auth.role]);
+
+  // ============================
+  // ⚠️ IMPORTANTE: QUITAMOS DOM MANIPULATION GLOBAL
+  // ============================
+  // ❌ ESTE BLOQUE YA NO SE USA
+  // porque rompe React controlado
+  /*
   useEffect(() => {
     const handleInput = (event) => {
       const { target } = event;
       if (!target || !target.tagName) return;
-      if (target.hasAttribute('data-no-uppercase')) return;
+
+      if (target.hasAttribute("data-no-uppercase")) return;
 
       const tagName = target.tagName.toUpperCase();
       const type = target.type ? target.type.toLowerCase() : "";
@@ -55,26 +87,39 @@ export default function AppShell({
     };
 
     document.addEventListener("input", handleInput, true);
-    return () => document.removeEventListener("input", handleInput, true);
+
+    return () => {
+      document.removeEventListener("input", handleInput, true);
+    };
   }, []);
+  */
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("full_name");
-    localStorage.removeItem("role");
-    localStorage.removeItem("role_label");
+    localStorage.clear();
     navigate("/login");
   };
 
-  const navItems = getNavItems(role).filter((item) => item.path !== location.pathname);
+  const isActive = (path) => location.pathname === path;
 
   return (
     <div className="app-ui">
       <div className="app-shell">
+
+        {/* HEADER */}
         <header className="app-topbar">
-          <button className="app-brand" type="button" onClick={() => navigate(token ? "/referencias" : "/login")}>
-            <img className="app-brand-logo" src="/images/logo.png" alt="RF Logo" />
+          <button
+            className="app-brand"
+            type="button"
+            onClick={() =>
+              navigate(token ? "/referencias" : "/login")
+            }
+          >
+            <img
+              className="app-brand-logo"
+              src="/images/logo.png"
+              alt="RF Logo"
+            />
+
             <span className="app-brand-copy">
               <small>Panel unificado</small>
               <strong>Sistema de Referencias</strong>
@@ -82,17 +127,29 @@ export default function AppShell({
           </button>
 
           <div className="app-topbar-tools">
-            {token && userName && <span className="app-user-label">{userName}</span>}
-            {token && roleLabel && <span className="app-role-chip">{roleLabel}</span>}
 
+            {token && userName && (
+              <span className="app-user-label">
+                {userName}
+              </span>
+            )}
+
+            {token && roleLabel && (
+              <span className="app-role-chip">
+                {roleLabel}
+              </span>
+            )}
+
+            {/* NAV */}
             {navItems.length > 0 && (
-              <nav className="app-shortcuts" aria-label="Accesos rapidos">
+              <nav className="app-shortcuts">
                 {navItems.map((item) => (
                   <button
                     key={item.path}
-                    className="app-nav-link"
                     type="button"
                     onClick={() => navigate(item.path)}
+                    className={`app-nav-link ${isActive(item.path) ? "active" : ""
+                      }`}
                   >
                     {item.label}
                   </button>
@@ -100,41 +157,76 @@ export default function AppShell({
               </nav>
             )}
 
+            {/* ACTIONS */}
             <div className="app-toolbar-actions">
+
               {token && (
-                <button className="app-button app-button--secondary" type="button" onClick={() => navigate("/referencias")}>
+                <button
+                  type="button"
+                  className="app-button app-button--secondary"
+                  onClick={() => navigate("/referencias")}
+                >
                   Menu
                 </button>
               )}
-              <button className="app-button app-button--ghost" type="button" onClick={() => window.history.back()}>
+
+              <button
+                type="button"
+                className="app-button app-button--ghost"
+                onClick={() => window.history.back()}
+              >
                 Regresar
               </button>
-              <button className="app-button app-button--ghost" type="button" onClick={() => window.history.forward()}>
+
+              <button
+                type="button"
+                className="app-button app-button--ghost"
+                onClick={() => window.history.forward()}
+              >
                 Adelante
               </button>
+
               {token && (
-                <button className="app-button app-button--danger" type="button" onClick={logout}>
+                <button
+                  type="button"
+                  className="app-button app-button--danger"
+                  onClick={logout}
+                >
                   Salir
                 </button>
               )}
+
             </div>
           </div>
         </header>
 
+        {/* HERO */}
         <section className="app-hero">
           <div className="app-hero-copy">
-            <span className="app-eyebrow">{eyebrow}</span>
+            <span className="app-eyebrow">
+              {eyebrow}
+            </span>
             <h1>{title}</h1>
             <p>{subtitle}</p>
           </div>
-          {heroActions ? <div className="app-hero-actions">{heroActions}</div> : null}
+
+          {heroActions && (
+            <div className="app-hero-actions">
+              {heroActions}
+            </div>
+          )}
         </section>
 
-        <main className={`app-content ${contentClassName}`.trim()}>{children}</main>
+        {/* CONTENT */}
+        <main className={`app-content ${contentClassName}`}>
+          {children}
+        </main>
 
+        {/* FOOTER */}
         <footer className="app-footer">
-          Interfaz unificada con la misma navegacion, colores y estilos del menu principal.
+          Interfaz unificada del sistema de referencias.
         </footer>
+
       </div>
     </div>
   );

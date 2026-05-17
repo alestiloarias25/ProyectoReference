@@ -44,7 +44,16 @@ export default function PasoPersonas({ onNext }) {
   const [showNewCiudad, setShowNewCiudad] = useState(false);
   const [newEmpresa, setNewEmpresa] = useState(initialEmpresa);
   const [newCiudad, setNewCiudad] = useState(initialCiudad);
-  const [form, setForm] = useState(initialPersonaForm);
+  const [TPTipoDocumento, setTPTipoDocumento] = useState("CC");
+  const [TPNoDocumento, setTPNoDocumento] = useState("");
+  const [TPNombres, setTPNombres] = useState("");
+  const [TPApellidos, setTPApellidos] = useState("");
+  const [TPDireccionResidencia, setTPDireccionResidencia] = useState("");
+  const [TPCelular1, setTPCelular1] = useState("");
+  const [TPCelular2, setTPCelular2] = useState("");
+  const [TPBarriosZona, setTPBarriosZona] = useState("");
+  const [TEId, setTEId] = useState("");
+  const [TCId, setTCId] = useState("");
   const [searchingPersona, setSearchingPersona] = useState(false);
   const [searchedPersona, setSearchedPersona] = useState(null);
   const [showCreatePersona, setShowCreatePersona] = useState(false);
@@ -95,7 +104,16 @@ export default function PasoPersonas({ onNext }) {
   };
 
   const resetPersonaFlow = () => {
-    setForm(initialPersonaForm);
+    setTPTipoDocumento("CC");
+    setTPNoDocumento("");
+    setTPNombres("");
+    setTPApellidos("");
+    setTPDireccionResidencia("");
+    setTPCelular1("");
+    setTPCelular2("");
+    setTPBarriosZona("");
+    setTEId("");
+    setTCId("");
     setSearchedPersona(null);
     setShowCreatePersona(false);
     setSearchMessage("");
@@ -145,18 +163,13 @@ export default function PasoPersonas({ onNext }) {
     }
   }, [token]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    const normalizedValue = typeof value === "string" ? value.toUpperCase() : value;
-    setForm((prev) => ({ ...prev, [name]: normalizedValue }));
-  };
 
   const buscarPersona = () => {
-    const documento = String((form.TPNoDocumento ?? "")).trim();
-    const tipoDocumento = String((form.TPTipoDocumento ?? "")).trim();
+    const documento = String((TPNoDocumento ?? "")).trim();
+    const tipoDocumento = String((TPTipoDocumento ?? "")).trim();
 
     const selectedTipoDocumento = tipoDocumento || document.querySelector('select[name="TPTipoDocumento"]')?.value || "";
-    const enteredDocumento = documento || document.querySelector('input[name="TPNoDocumento"]')?.value || "";
+    const enteredDocumento = documento || document.querySelector('input[onChange={(e) => setTPNoDocumento(e.target.value.toUpperCase())}]')?.value || "";
 
     const normalizedTipoDocumento = String(selectedTipoDocumento).trim();
     const normalizedDocumento = String(enteredDocumento).trim();
@@ -167,10 +180,10 @@ export default function PasoPersonas({ onNext }) {
     }
 
     if (!tipoDocumento && normalizedTipoDocumento) {
-      setForm((prev) => ({ ...prev, TPTipoDocumento: normalizedTipoDocumento }));
+      setTPTipoDocumento(normalizedTipoDocumento);
     }
     if (!documento && normalizedDocumento) {
-      setForm((prev) => ({ ...prev, TPNoDocumento: normalizedDocumento.toUpperCase() }));
+      setTPNoDocumento(normalizedDocumento.toUpperCase());
     }
 
     setSearchingPersona(true);
@@ -218,7 +231,7 @@ export default function PasoPersonas({ onNext }) {
       })
       .then((res) => {
         setEmpresas((prev) => [...prev, res.data]);
-        setForm((prev) => ({ ...prev, TEId: res.data.TEId }));
+        setTEId(res.data.TEId);
         setNewEmpresa(initialEmpresa);
         setShowNewEmpresa(false);
       })
@@ -243,7 +256,7 @@ export default function PasoPersonas({ onNext }) {
       })
       .then((res) => {
         setCiudades((prev) => [...prev, res.data]);
-        setForm((prev) => ({ ...prev, TCId: res.data.TCId }));
+        setTCId(res.data.TCId);
         setNewCiudad(initialCiudad);
         setShowNewCiudad(false);
       })
@@ -253,16 +266,22 @@ export default function PasoPersonas({ onNext }) {
   };
 
   const guardarPersona = () => {
-    if (!form.TEId || !form.TCId) {
+    if (!TEId || !TCId) {
       showModal("Faltan datos", "Debes seleccionar una Empresa y una Ciudad", "error");
       return;
     }
 
     const dataToSend = {
-      ...form,
-      TPNoDocumento: form.TPNoDocumento.trim(),
-      TEId_id: parseInt(form.TEId, 10),
-      TCId_id: parseInt(form.TCId, 10),
+      TPTipoDocumento: TPTipoDocumento,
+      TPNoDocumento: TPNoDocumento.trim(),
+      TPNombres: TPNombres.trim(),
+      TPApellidos: TPApellidos.trim(),
+      TPDireccionResidencia: TPDireccionResidencia.trim(),
+      TPCelular1: TPCelular1.trim(),
+      TPCelular2: TPCelular2.trim(),
+      TPBarriosZona: TPBarriosZona.trim(),
+      TEId_id: parseInt(TEId, 10),
+      TCId_id: parseInt(TCId, 10),
     };
 
     axios
@@ -299,7 +318,7 @@ export default function PasoPersonas({ onNext }) {
         </div>
 
         <div className="wizard-form-grid">
-          <select name="TPTipoDocumento" value={form.TPTipoDocumento} onChange={handleChange} required>
+          <select name="TPTipoDocumento" value={TPTipoDocumento}  required>
             <option value="">-- Seleccionar Tipo Documento --</option>
             <option value="CC">CC: CEDULA DE CIUDADANIA</option>
             <option value="CE">CE: CEDULA DE EXTRANJERIA</option>
@@ -310,10 +329,10 @@ export default function PasoPersonas({ onNext }) {
           <input
             type="text"
             autoComplete="off"
-            name="TPNoDocumento"
+            onChange={(e) => setTPNoDocumento(e.target.value.toUpperCase())}
             placeholder="No Documento"
-            value={form.TPNoDocumento}
-            onInput={handleChange}
+            value={TPNoDocumento}
+            onChange={(e) => setTPNoDocumento(e.target.value.toUpperCase())}
             maxLength="50"
             required
           />
@@ -349,19 +368,19 @@ export default function PasoPersonas({ onNext }) {
           </div>
 
           <div className="wizard-form-grid">
-            <input autoComplete="off" name="TPNombres" placeholder="Nombres" value={form.TPNombres} onChange={handleChange} />
-            <input autoComplete="off" name="TPApellidos" placeholder="Apellidos" value={form.TPApellidos} onChange={handleChange} />
-            <input autoComplete="off" name="TPDireccionResidencia" placeholder="Direccion" value={form.TPDireccionResidencia} onChange={handleChange} />
-            <input autoComplete="off" name="TPCelular1" placeholder="Celular 1" value={form.TPCelular1} onChange={handleChange} />
-            <input autoComplete="off" name="TPCelular2" placeholder="Celular 2" value={form.TPCelular2} onChange={handleChange} />
-            <input autoComplete="off" name="TPBarriosZona" placeholder="Barrio / Zona" value={form.TPBarriosZona} onChange={handleChange} />
+            <input name="TPNombres" autoComplete="nope" onChange={(e) => setTPNombres(e.target.value.toUpperCase())} placeholder="Nombres" value={TPNombres}  />
+            <input name="TPApellidos" autoComplete="nope" onChange={(e) => setTPApellidos(e.target.value.toUpperCase())} placeholder="Apellidos" value={TPApellidos}  />
+            <input name="TPDireccionResidencia" autoComplete="nope" onChange={(e) => setTPDireccionResidencia(e.target.value.toUpperCase())} placeholder="Direccion" value={TPDireccionResidencia}  />
+            <input name="TPCelular1" autoComplete="nope" onChange={(e) => setTPCelular1(e.target.value.toUpperCase())} placeholder="Celular 1" value={TPCelular1}  />
+            <input name="TPCelular2" autoComplete="nope" onChange={(e) => setTPCelular2(e.target.value.toUpperCase())} placeholder="Celular 2" value={TPCelular2}  />
+            <input name="TPBarriosZona" autoComplete="nope" onChange={(e) => setTPBarriosZona(e.target.value.toUpperCase())} placeholder="Barrio / Zona" value={TPBarriosZona}  />
           </div>
 
           <div className="app-grid app-grid--2">
             <div className="app-surface">
               <h3>Empresa</h3>
               <div className="wizard-form-grid">
-                <select name="TEId" value={form.TEId} onChange={handleChange}>
+                <select name="TEId" value={TEId} onChange={(e) => setTEId(e.target.value)}>
                   <option value="">-- Seleccionar Empresa --</option>
                   {empresas.map((emp) => (
                     <option key={emp.TEId} value={emp.TEId}>{getEmpresaLabel(emp)}</option>
@@ -392,7 +411,7 @@ export default function PasoPersonas({ onNext }) {
             <div className="app-surface">
               <h3>Ciudad</h3>
               <div className="wizard-form-grid">
-                <select name="TCId" value={form.TCId} onChange={handleChange}>
+                <select name="TCId" value={TCId} onChange={(e) => setTCId(e.target.value)}>
                   <option value="">-- Seleccionar Ciudad --</option>
                   {ciudades.map((ciu) => (
                     <option key={ciu.TCId} value={ciu.TCId}>{getCiudadLabel(ciu)}</option>

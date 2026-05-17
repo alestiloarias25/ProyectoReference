@@ -12,66 +12,76 @@ function Login() {
     password: "",
   });
 
-  const [modal, setModal] = useState({ isOpen: false, title: "", message: "", type: "info" });
+  const [modal, setModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+  });
 
   const showModal = (title, message, type = "info") => {
     setModal({ isOpen: true, title, message, type });
   };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    axios
-      .post(`${process.env.REACT_APP_API_URL || ""}/api/auth/login/`, form)
-      .then(async (res) => {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("user", res.data.user);
-        localStorage.setItem("full_name", res.data.name);
-        localStorage.setItem("role", res.data.role);
-        localStorage.setItem("role_label", res.data.role_label);
-        localStorage.removeItem("aviso_habeas_data");
+    try {
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_URL || ""}/api/auth/login/`,
+        form
+      );
 
-        if (res.data.role === "ARRENDADOR") {
-          try {
-            await axios.get(`${process.env.REACT_APP_API_URL || ""}/api/persona/${res.data.user}/`, {
-              headers: { Authorization: `Token ${res.data.token}` }
-            });
-            navigate("/referencias");
-          } catch (error) {
-            if (error.response && error.response.status === 404) {
-              navigate("/personas/crear");
-            } else {
-              navigate("/referencias");
-            }
-          }
-        } else {
-          navigate("/referencias");
-        }
-      })
-      .catch(() => {
-        showModal("Acceso denegado", "Credenciales incorrectas.", "error");
-      });
+      // =========================
+      // STORE SESSION
+      // =========================
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", res.data.user);
+      localStorage.setItem("full_name", res.data.name);
+      localStorage.setItem("role", res.data.role);
+      localStorage.setItem("role_label", res.data.role_label);
+      localStorage.setItem("persona_exists", res.data.persona_exists);
+      localStorage.removeItem("aviso_habeas_data");
+
+      // =========================
+      // ROUTING
+      // =========================
+      if (res.data.role === "ARRENDADOR" && !res.data.persona_exists) {
+        navigate("/personas/crear");
+      } else {
+        navigate("/referencias");
+      }
+
+    } catch (error) {
+      showModal(
+        "Acceso denegado",
+        "Credenciales incorrectas.",
+        "error"
+      );
+    }
   };
 
   return (
     <AuthShell
       eyebrow="Acceso principal"
       title="Inicia sesión"
-      subtitle="Si eres Arrendador administra tus Bienes Inmuebles y reporta novedades y si eres Arrendatario consulta tu puntaje"
+      subtitle="Accede al sistema de referencias"
       footerLinks={[
         { to: "/register", label: "Crear cuenta" },
-        { to: "/forgot", label: "Olvide mi contrasena" },
+        { to: "/forgot", label: "Olvidé mi contraseña" },
       ]}
     >
       <form onSubmit={handleLogin} autoComplete="off">
         <div className="app-field">
-          <label htmlFor="login-username">No. de Documento</label>
+          <label>No. de Documento</label>
           <input
-            id="login-username"
             type="text"
             name="no_documento"
             placeholder="No. de Documento"
@@ -82,34 +92,39 @@ function Login() {
         </div>
 
         <div className="app-field">
-          <label htmlFor="login-password">Contrasena</label>
+          <label>Contraseña</label>
           <input
-            id="login-password"
             type="password"
             name="password"
-            placeholder="Contrasena"
+            placeholder="Contraseña"
             value={form.password}
             onChange={handleChange}
             className="app-input"
           />
         </div>
 
-        <button type="submit" className="app-button app-button--primary">
+        <button
+          type="submit"
+          className="app-button app-button--primary"
+        >
           Iniciar sesión
         </button>
       </form>
 
-      <AppModal 
-        isOpen={modal.isOpen} 
-        title={modal.title} 
-        message={modal.message} 
-        type={modal.type} 
-        onClose={() => setModal({ ...modal, isOpen: false })} 
+      <AppModal
+        isOpen={modal.isOpen}
+        title={modal.title}
+        message={modal.message}
+        type={modal.type}
+        onClose={() =>
+          setModal((prev) => ({
+            ...prev,
+            isOpen: false,
+          }))
+        }
       />
     </AuthShell>
   );
 }
 
 export default Login;
-
-

@@ -36,9 +36,11 @@ def login(request):
     role = profile.role if profile else "ADMIN"
     role_label = profile.get_role_display() if profile else "Administrador"
 
+    persona_exists = False
     try:
         persona = Persona.objects.get(TPNoDocumento=user.username)
         full_name = f"{persona.TPNombres} {persona.TPApellidos}".strip()
+        persona_exists = True
     except Persona.DoesNotExist:
         full_name = f"{user.first_name} {user.last_name}".strip() or user.username
 
@@ -48,6 +50,7 @@ def login(request):
         "name": full_name,
         "role": role,
         "role_label": role_label,
+        "persona_exists": persona_exists,
     })
 
 

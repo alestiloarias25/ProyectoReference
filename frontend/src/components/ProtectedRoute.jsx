@@ -13,6 +13,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/referencias" />;
   }
 
+  // Enforce TPersonas creation for ARRENDADOR
+  const personaExists = localStorage.getItem("persona_exists") === "true";
+  const currentPath = window.location.pathname;
+
+  if (role === "ARRENDADOR" && !personaExists && currentPath !== "/personas/crear") {
+    return <Navigate to="/personas/crear" replace />;
+  }
+
   return children;
 };
 

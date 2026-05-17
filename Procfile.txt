@@ -1,0 +1,2 @@
+web: gunicorn backend.wsgi:application --bind 
+147.93.54.142:$PORT
